@@ -25,9 +25,10 @@ Project homepage is found at      : http://phphiler.sourceforge.net
 
 require_once('phphiler.functions.inc');
 require_once('phphiler.html.inc');
+require_once('phphiler.debugger.inc');
 
 /**
- * PHPhiler is a directory indexing system
+ * PHPhiler is a directory indexing engine
  *
  * The PHPhiler class is the main object constructed for file and directory
  * indexing. The constructor of a PHPhiler object sets the main options and
@@ -43,25 +44,26 @@ require_once('phphiler.html.inc');
 class PHPhiler {
 
   // private variables
-  var $__phphiler_ver       = '0.3.0'; // version number
-  var $__phphiler_link      = 'http://phphiler.sf.net'; // link address
+  var $_phphiler_ver        = '0.3.1cvs'; // version number
+  var $_phphiler_link       = 'http://phphiler.sf.net'; // link address
 
-  var $__statusbar_comment  = NULL;     // what to display in the status bar (string/keyword)
+  var $_statusbar_comment   = NULL;     // what to display in the status bar (string/keyword)
 
-  var $__sortcolumn         = NULL;     // the column to sort by (string/keyword)
-  var $__sortorder          = NULL;     // the order to sort by (asc/desc) (string/keyword)
+  var $_sortcolumn          = NULL;     // the column to sort by (string/keyword)
+  var $_sortorder           = NULL;     // the order to sort by (asc/desc) (string/keyword)
 
-  var $__include_sub_dirs   = NULL;     // whether to include directories (bool)
-  var $__include_files      = NULL;     // whether to include files (bool)
-  var $__include_table_header = NULL;   // whether to include the table header columns (bool)
-  var $__include_table_footer = NULL;   // whether to include the table footer (bool)
+  var $_include_sub_dirs    = NULL;     // whether to include directories (bool)
+  var $_include_files       = NULL;     // whether to include files (bool)
+  var $_include_table_header = NULL;    // whether to include the table header columns (bool)
+  var $_include_table_footer = NULL;    // whether to include the table footer (bool)
 
-  var $__header_path        = NULL;     // path to header file (string)
-  var $__footer_path        = NULL;     // path to footer file (string)
+  var $_header_path         = NULL;     // path to header file (string)
+  var $_footer_path         = NULL;     // path to footer file (string)
 
-  var $__total_entries      = NULL;     // number of files in this listing ($int)
+  var $_total_entries       = NULL;     // number of files in this listing ($int)
 
-  var $__debug_mode         = false;     // debug mode on/off (bool)
+  var $_debug_mode          = false;    // debug mode on/off (bool)
+  var $Debugger             = NULL;     // reference to the debugger instance
 
   var $files                = array();  // actual filenames and doctitles ('file' => 'title')
   var $dirs                 = array();  // dirs and corresponding titles ('dir' => 'title')
@@ -94,15 +96,15 @@ class PHPhiler {
     clearstatcache();
 
     // constants
-    define ('PHPH_TITLE', 'title');
-    define ('PHPH_SIZE', 'size');
-    define ('PHPH_DATE', 'date');
-    define ('PHPH_DESCR', 'descr');
+    if (!defined('PHPH_TITLE')) define ('PHPH_TITLE', 'title');
+    if (!defined('PHPH_SIZE')) define ('PHPH_SIZE', 'size');
+    if (!defined('PHPH_DATE')) define ('PHPH_DATE', 'date');
+    if (!defined('PHPH_DESCR')) define ('PHPH_DESCR', 'descr');
 
-    define ('PHPH_ASC', 'asc');
-    define ('PHPH_DESC', 'desc');
+    if (!defined('PHPH_ASC')) define ('PHPH_ASC', 'asc');
+    if (!defined('PHPH_DESC')) define ('PHPH_DESC', 'desc');
 
-    define ('PHPH_DIR', 'dir');
+    if (!defined('PHPH_DIR')) define ('PHPH_DIR', 'dir');
 
     unset($GLOBALS['PHPH_CSS_SUFFIX']);
 
@@ -112,22 +114,30 @@ class PHPhiler {
     } else {
         exit("<b style=\"color:red;\">ERROR:</b> \$GLOBALS['PHPH_CONFIG_FILE'] is not set.<br>");
     }
-    require($this->configfilename);
+    require_once($this->configfilename);
+
+    // create a debugger instance
+    if ($this->_debug_mode === true) {
+        $this->Debugger =& new PHPhiler_Debugger($this->getDocRoot() . $this->getPHPhilerPath(),
+                                                 $this);
+    }
 
     // set the global constants for version no. and project link
-    define('PHPHILER_LINK', $this->__phphiler_link);
-    define('PHPHILER_VER', $this->__phphiler_ver);
+    if (!defined('PHPHILER_VER')) define('PHPHILER_VER', $this->_phphiler_ver);
+    if (!defined('PHPHILER_LINK')) define('PHPHILER_LINK', $this->_phphiler_link);
 
-    $doc_root = $this->getDocRoot();
-    if (!$doc_root) {
-      $doc_root = $_SERVER['DOCUMENT_ROOT'] . '/';
+    // check if document root was set in config
+    if ($this->getDocRoot() == NULL) {
+        // document root was not set, use webserver's instead
+        $this->setDocRoot($_SERVER['DOCUMENT_ROOT'] . '/');
     }
 
+    // check if we can find PHPhiler source files
     if (!file_exists($this->getDocRoot() . $this->getPHPhilerPath() . 'phphiler.inc')) {
-        exit("<b style=\"color:red;\">ERROR:</b> Cannot find PHPhiler source. Please check config of setPHPhilerPath().<br>");
+        exit("<b style=\"color:red;\">ERROR:</b> Cannot find PHPhiler source files. Please check config of setPHPhilerPath().<br>");
     }
 
-    // Include actions if they exist
+    // include actions if they exist
     if (file_exists($this->getDocRoot() . $this->getPHPhilerPath() . 'phphiler.actions.inc')) {
         require_once($this->getDocRoot() . $this->getPHPhilerPath() . 'phphiler.actions.inc');
     }
@@ -136,43 +146,76 @@ class PHPhiler {
     }
 
     // pop the trailing slash off the end
-    $doc_root_notrail = substr($doc_root, 0, strlen($doc_root)-1);
-    // Set the current script filename and absolute working directory
-    $self_path_ar = explode('/', $doc_root_notrail . $_SERVER['SCRIPT_NAME']);
-    $this->file_self = array_pop($self_path_ar);
+    //$doc_root_notrail = substr($doc_root, 0, strlen($doc_root)-1);
+    $doc_root_notrail = getcwd();
+        $this->toDebugger(E_NOTICE, "DOCROOT: " . $this->getDocRoot(), __FUNCTION__, __LINE__);
+        $this->toDebugger(E_NOTICE, "DOCROOT NT: ".$doc_root_notrail, __FUNCTION__, __LINE__);
+        $this->toDebugger(E_NOTICE, "SCRIPTNAME: ".$_SERVER['SCRIPT_NAME'], __FUNCTION__, __LINE__);
+        $this->toDebugger(E_NOTICE, "GETCWD()  : ". getcwd(), __FUNCTION__, __LINE__);
 
-    // if startdir was given, set it as CWD
+    // Set the current directory and absolute working directory
+    //if (strncasecmp(getcwd(), $doc_root_notrail, strlen(getcwd()))
+    $script_name_ar = explode('/',  $_SERVER['SCRIPT_NAME']);
+    $this->file_self = array_pop($script_name_ar);
+        $this->toDebugger(E_NOTICE, "FILE_SELF: ".$this->file_self, __FUNCTION__, __LINE__);
+        $this->toDebugger(E_NOTICE, "SCRIPTNAME: ".var_export($script_name_ar, true), __FUNCTION__, __LINE__);
+
+    // if startdir was given
     if (isset($startdir)) {
-        if ( !file_exists($startdir) || !is_dir($startdir) ) {
-            exit("<br>ERROR: Given starting directory '$startdir' is not a valid directory.<br>");
+        if ( !is_dir($startdir) ) {
+            exit("<b style=\"color:red;\">ERROR:</b> PHPhiler(): The supplied directory '$startdir' cannot be found.<br>");
+        }
+        if (!is_readable($startdir)) {
+            exit("<b style=\"color:red;\">ERROR:</b> PHPhiler(): Unable to read from supplied directory '".$startdir."'<br>");
+        }
+
+        // if startdir does NOT begin with fwd slash, it's a relative path
+        if (substr($startdir, 0, 1) !== '/'
+                // except on Netware, relative paths DON'T begin with SYS: or VOLn:
+                && strncasecmp($startdir, 'sys:', 4) !== 0
+                && strncasecmp($startdir, 'vol1:', 5) !== 0 )
+        {
+                $this->toDebugger(E_NOTICE, "STARTDIR_REL:" . $startdir, __FUNCTION__, __LINE__);
+            // convert to absolute path
+            //$startdir = implode('/', $script_name_ar) . '/' . $startdir;
+            $startdir = getcwd() . '/' . $startdir;
+        }
+
+        // set the supplied directory to current working dir and
+        // resolve any symbolic links
+        $this->cwd = realpath($startdir) . '/';
+        // set the relative dir to the startdir - to begin with it's the top directory
+        $this->cwrd = ''; // current working relative dir
+
+            $this->toDebugger(E_NOTICE, "STARTDIR:" . $startdir, __FUNCTION__, __LINE__);
+            $this->toDebugger(E_NOTICE, "CWD:" . $this->cwd, __FUNCTION__, __LINE__);
+            $this->toDebugger(E_NOTICE, "CWRD:" . $this->cwrd, __FUNCTION__, __LINE__);
+
+    // if startdir was NOT given
+    } else {
+
+        //$this->cwd = implode('/', $self_path_ar);
+        $this->cwd = getcwd() . '/';
+        // resolve any symbolic links
+        $this->cwd = realpath($this->cwd) . '/';
+            $this->toDebugger(E_NOTICE, "CWD: " . $this->cwd, __FUNCTION__, __LINE__);
+
+        // do some basic error checking
+        if (!is_dir($this->cwd)) {
+            exit("<b style=\"color:red;\">ERROR:</b> PHPhiler(): Unable to open directory '".$this->cwd."'<br>");
+        }
+        if (!is_readable($this->cwd)) {
+            exit("<b style=\"color:red;\">ERROR:</b> PHPhiler(): Unable to read from directory '".$this->cwd."'<br>");
         }
 
 
-        // if startdir begins with fwd slash, it's an absolute path
-        $is_rel_path = (substr($startdir,0,1) !== '/');
-        if ($is_rel_path) {
-            $startdir = implode('/', $self_path_ar) . '/' . $startdir;
-        }
-      // set the supplied directory to current working dir and
-      // resolve any symbolic links
-      $this->cwd = realpath($startdir) . '/';
-      // relative dir to the startdir is the top directory
-      $this->cwrd = ''; // current working relative dir
-    }
-    else {
-      $this->cwd = implode('/', $self_path_ar);
-      // do some basic error checking
-      if (!(file_exists($this->cwd) || is_dir($this->cwd) || is_link($this->cwd))) {
-        exit("<b style=\"color:red;\">ERROR:</b> PHPhiler(): Unable to open directory '".$this->cwd."'<br>");
-      }
-      // resolve any symbolic links
-      $this->cwd = realpath($this->cwd) . '/';
-      // remove cwd from path to current script so we can get the relative dir
-      $reldir = str_replace(strtolower(getcwd()), '', strtolower($this->cwd));
-      // remove the first forward slash
-      $reldir = substr($reldir, 1);
-      // if it's the root dir, insert a './' instead of '/'
-      $this->cwrd = ($reldir == '/' ? './' : $reldir); // current working relative dir
+        // remove cwd from path to current script so we can get the relative dir
+        $reldir = str_replace(strtolower(getcwd()), '', strtolower($this->cwd));
+        // remove the first forward slash
+        $reldir = substr($reldir, 1);
+        // if it's the root dir, insert a './' instead of '/'
+        $this->cwrd = ($reldir == '/' ? './' : $reldir); // current working relative dir
+            $this->toDebugger(E_NOTICE, "CWRD: " . $this->cwrd, __FUNCTION__, __LINE__);
     }
 
   }
@@ -191,7 +234,7 @@ class PHPhiler {
     chdir($org_cwd);
 
     // check if the column we sort by is also shown or display an error
-    if (!array_key_exists($this->__sortcolumn, $this->getColumnHeaders())) {
+    if (!array_key_exists($this->_sortcolumn, $this->getColumnHeaders())) {
         exit ("<b>CONFIG ERROR:</b> The column to sort by is not included in the column headers.<br>");
     }
 
@@ -199,9 +242,9 @@ class PHPhiler {
 
     $sortitem = NULL;
     // sort the arrays
-    switch ($this->__sortorder) {
+    switch ($this->_sortorder) {
       case PHPH_ASC :
-        switch ($this->__sortcolumn) {
+        switch ($this->_sortcolumn) {
           case PHPH_TITLE :
             if ($this->getDirectoriesOnTop()) {
               uasort($this->dirs, "strcasecmp");
@@ -227,7 +270,7 @@ class PHPhiler {
         }
         break;
       case PHPH_DESC :
-        switch ($this->__sortcolumn) {
+        switch ($this->_sortcolumn) {
           case PHPH_TITLE :
             uasort($this->dirs, "strcasecmp");
             $this->dirs = array_reverse($this->dirs);
@@ -252,13 +295,13 @@ class PHPhiler {
         break;
     }
 
-    $this->__total_entries = 0;
+    $this->_total_entries = 0;
 
     if ($this->getIncludeSubDirectories()) {
-      $this->__total_entries += sizeof($this->dirs);
+      $this->_total_entries += sizeof($this->dirs);
     }
     if ($this->getIncludeFiles()) {
-      $this->__total_entries += sizeof($this->files);
+      $this->_total_entries += sizeof($this->files);
     }
 
     // set the table ID for the current listings
@@ -286,14 +329,14 @@ class PHPhiler {
         // stop if we've reached the max number of entries
         if (($this->getMaxEntries() != 0) && ($this->getCurEntries() == $this->getMaxEntries())) break;
         if (array_key_exists ($key, $this->dirs)
-            && $this->__include_sub_dirs) {
+            && $this->_include_sub_dirs) {
           $html->addDirToHtml($key, $this->dirs[$key]);
           $dir_exists = TRUE;
           $this->setCurEntries($this->getCurEntries()+1);
         }
       }
       // add a divider if there are still elements to show in the table
-      if ($this->__total_entries > $this->getCurEntries()
+      if ($this->_total_entries > $this->getCurEntries()
           && $this->getCurEntries() != $this->getMaxEntries()
           && $dir_exists) {
         $html->addDividerToHtml(sizeof($this->getColumnHeaders()));
@@ -330,7 +373,9 @@ class PHPhiler {
     $html->addExecTimeToHtml($totaltime);
 
     // finally, print the HTML output to the document
-    echo($html->getHtml());
+    echo $html->getHtml();
+
+    $this->Debugger->openDebugger();
   }
 
 
@@ -356,7 +401,7 @@ class PHPhiler {
 
         // if it's a file
         if (is_file($file)
-            && $this->__include_files // do we want to include files?
+            && $this->_include_files // do we want to include files?
             && $file !== $this->file_self // is it the script itself?
             && $file !== $this->templatefilename ) // is it a template?
         {
@@ -455,8 +500,7 @@ class PHPhiler {
               $this->filedates[$dir] = readFileDate($dir);
             }
           $this->filepaths[$dir] = $this->cwd . $dir;
-          if ($fileinfo['uri'] == NULL) {
-
+          if (!isset($fileinfo['uri'])) {
             $fileinfo['uri'] = str_replace ($this->getDocRoot(), '', $this->filepaths[$dir]);
           }
             $this->fileuris[$dir] = $fileinfo['uri'];
@@ -529,7 +573,7 @@ class PHPhiler {
   // Function that creates the template file for displaying custom header and footers.
   function createTemplateFile() {
     // define the path where we're going to put the template file
-    $template_filename = $this->cwd.'/'.$this->templatefilename;
+    $template_filename = $this->cwd . '/' . $this->templatefilename;
 
     // retrieve the full header path from the webserver and the config
     $header_path = $this->getDocRoot() . $this->getHTMLHeader();
@@ -543,8 +587,9 @@ class PHPhiler {
     $string .= "\n<pre><div>\n";
     // append some php code to the string
     $string .= "\n<?php\n";
-    $string .= 'if ($_GET[\'file\']) { echo htmlentities(file_get_contents(\''.$this->cwd.'\'.urldecode($_GET[\'file\']))); } ';
-    $string .= "\n?>\n</div></pre>\n";
+    $string .= '$GLOBALS[\'PHPH_TEMPLATE\'] = TRUE;' . "\n";
+    $string .= 'if ($_GET[\'file\']) { echo htmlentities(file_get_contents(\''.$this->cwd.'\'.urldecode($_GET[\'file\']))); } ' . "\n";
+    $string .= "?>\n</div></pre>\n";
 
     // retrieve the full footer path from the webserver and the config
     $footer_path = $this->getDocRoot() . $this->getHTMLFooter();
@@ -591,6 +636,16 @@ class PHPhiler {
     }
     exit ("<b style=\"color:red;\">ERROR:</b> Could not determine suffix for file '$file' in dir '".$this->cwd."'<br>");
   }
+
+  // wrapper function which checks if debugging is enabled before passing debug info to the debugger
+  function toDebugger($int, $string, $function=NULL, $line=NULL) {
+      if ($this->_debug_mode === true && $this->Debugger !== NULL) {
+          $this->Debugger->toDebugger($int, $string, $function, $line);
+      } elseif ($this->_debug_mode === true && $this->Debugger === NULL) {
+          exit ("<b style=\"color:red;\">ERROR:</b> Debugger turned on but object was NULL!<br>");
+      }
+  }
+
 
   // _______________________________________________________________________ //
   // Set and get functions
@@ -650,12 +705,19 @@ class PHPhiler {
     return FALSE;
   }
 
+  /**
+   *
+   *
+   */
   function setURITranslationFunc($func=NULL, $arg_ar=NULL) {
-      if ( !isset($arg_ar) && !isset($func) ) {
+      // If arguments are given but no function name
+      if ( !empty($arg_ar) && empty($func) ) {
+          exit ("CONFIG: setURITranslationFunc missing function name for arguments!<br>");
+
+      } elseif ( empty($arg_ar) && empty($func) ) {
+          // both vars are empty, set defaults
           $arg_ar = array(ENT_COMPAT, $this->getCharset());
           $func = 'htmlentities';
-      } else {
-          echo "CONFIG: setURITranslationFunc missing arguments!<br>";
       }
       $GLOBALS['PHPH_URI_FUNC'] = $func;
       $GLOBALS['PHPH_URI_ARGS'] = $arg_ar;
@@ -667,8 +729,8 @@ class PHPhiler {
   }
 
   function setSortOrder($column, $order) {
-    $this->__sortcolumn = $column;
-    $this->__sortorder = $order;
+    $this->_sortcolumn = $column;
+    $this->_sortorder = $order;
   }
 
   function setDateFormat($string) {
@@ -688,27 +750,27 @@ class PHPhiler {
   }
 
   function setTitleTag($string) {
-    $this->__title_tag      = '<'.$string.'>';
-    $this->__title_end_tag  = '</'.$string.'>';
+    $this->_title_tag      = '<'.$string.'>';
+    $this->_title_end_tag  = '</'.$string.'>';
   }
 
   function setDescTag($string) {
-    $this->__desc_tag       = '<'.$string.'>';
-    $this->__desc_end_tag   = '</'.$string.'>';
+    $this->_desc_tag       = '<'.$string.'>';
+    $this->_desc_end_tag   = '</'.$string.'>';
   }
 
   function setIncludeSubDirectories($bool) {
-    $this->__include_sub_dirs = $bool;
+    $this->_include_sub_dirs = $bool;
   }
   function getIncludeSubDirectories() {
-    return $this->__include_sub_dirs;
+    return $this->_include_sub_dirs;
   }
 
   function setIncludeFiles($bool) {
-    $this->__include_files = $bool;
+    $this->_include_files = $bool;
   }
   function getIncludeFiles() {
-    return $this->__include_files;
+    return $this->_include_files;
   }
 
   function setSubDirDescendLevels($num) {
@@ -719,11 +781,11 @@ class PHPhiler {
   }
 
   function setIncludeTableHeader($bool) {
-    $this->__include_table_header = $bool;
+    $this->_include_table_header = $bool;
   }
 
   function setIncludeTableFooter($bool) {
-    $this->__include_table_footer = $bool;
+    $this->_include_table_footer = $bool;
   }
 
   function setColumnHeaders($col_ar) {
@@ -835,23 +897,23 @@ class PHPhiler {
   }
 
   function setHTMLHeader($string) {
-    $this->__header_path = $string;
+    $this->_header_path = $string;
   }
 
   function getHTMLHeader() {
-    return $this->__header_path;
+    return $this->_header_path;
   }
 
   function setHTMLFooter($string) {
-    $this->__footer_path = $string;
+    $this->_footer_path = $string;
   }
 
   function getHTMLFooter() {
-    return $this->__footer_path;
+    return $this->_footer_path;
   }
 
   function setStatusbarFileComment($string) {
-    $this->__statusbar_comment = $string;
+    $this->_statusbar_comment = $string;
   }
 
 } // end of class PHPhiler
