@@ -131,8 +131,10 @@ class PHPhiler {
 
     // Include actions if they exist
     if (file_exists($this->getDocRoot() . $this->getPHPhilerPath() . 'phphiler.actions.inc')) {
-//echo "ACTION: at " . $this->getDocRoot() . $this->getPHPhilerPath() . 'phphiler.actions.inc' . "<br>";
         require_once($this->getDocRoot() . $this->getPHPhilerPath() . 'phphiler.actions.inc');
+    }
+    if (file_exists($this->getDocRoot() . $this->getPHPhilerPath() . 'phphiler.custom.actions.inc')) {
+        require_once($this->getDocRoot() . $this->getPHPhilerPath() . 'phphiler.custom.actions.inc');
     }
 
     // pop the trailing slash off the end
