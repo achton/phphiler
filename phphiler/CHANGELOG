@@ -1,0 +1,92 @@
+____________________________________________________________________________
+PHPhiler 0.3.0 revision history
+Copyright (c) 2003-2004 Achton N. Netherclift
+____________________________________________________________________________
+
+
+PHPhiler 0.3.0
+==============
+Released [Not released]
+
+Feature:
+  - Suffix actions are now properly implemented so that a suffix can be
+    handled by any user-defined PHP function for file information retrieval
+  - Support for using a custom string translation function to translate
+    strings and URIs
+  - The web server's document root can now be set to something other than
+    DOCUMENT_ROOT
+  - File lists can now descend into an arbitrary number of subdirectories
+  - A bit more error handling implemented (not quite there yet)
+
+Change:
+  - Navigation links have been expanded, and the text can be translated
+  - Support for using wildcards when excluding files and directories
+  - Custom debugger removed (for now)
+  - Most settings now stored in the GLOBALS array instead of as object
+    variables
+  - Unstable and stable branches merged
+
+Bugfix:
+  - Custom date string now works for files as well
+  - Dir/file divider is now only inserted when it make sense to do so
+  - Lots of unnecessary file access eliminated
+  - External file retrieval defaults to file- or dirname if no <title> tag
+    is present
+
+PHPhiler 0.1.2-rc1
+==================
+Released 3rd February 2004
+
+Feature:
+  - Added links to the tables that will show all files for that file table
+    and returns to original file list appropriately
+  - It's now possible to exclude specific dir- or filenames from the listing.
+  - Added config setting to set a custom date()-format for tables
+
+Change:
+  - All path definitions to PHPhiler and config must now be absolute
+
+Bugfix:
+  - PHPhiler now works in a case-INsensitive manner in regards to suffixes (doh!)
+  - The config constants were substituted with a single $GLOBAL variable
+  - The header/footer template feature was broken. Fixed.
+  - HTML divider between dirs and files now properly inserted (and left out)
+    where appropriate
+
+PHPhiler 0.1.1-rc2
+==================
+Released 19th January 2004
+
+Feature:
+ - Added proper support for setting dirs on top or mingling with files in
+   listings
+ - Added constant PHPHILER_CONFIG_FILE to define custom path *and* filename
+   of config file
+ - Moved config file to a sample config file so as not to overwrite existing
+   installations
+
+Bugfix:
+ - Subdirectories linked correctly. (Originally fixed in rc1)
+ - Constants DESC and DESCR were mixed up in the HTML object. Fixed.
+ - Changed back to original directory after index of subdir
+
+PHPhiler 0.1.1-rc1
+==================
+Released 17th January 2004
+
+Feature:
+ - Added setting for displaying files/directories in a specific charset
+ - Added setting to use seperate CSS selectors for a table
+ - Altered revision numbering from alpha/beta to rc
+ - Added support for limiting number of elements in a listing
+ - Added constant PHPHILER_CONFIG_PATH to define custom path to config file
+
+Bugfix:
+ - Subdirectories linked correctly.
+
+
+PHPhiler 0.1.0-alpha
+====================
+Released 6th January 2004
+
+ - Initial release

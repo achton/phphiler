@@ -1,0 +1,134 @@
+____________________________________________________________________________
+PHPhiler 0.3.0 (unstable) readme
+Copyright (c) 2003-2004 Achton N. Netherclift
+____________________________________________________________________________
+
+
+Contents
+========
+  o Summary
+  o Archive contents
+  o Requirements
+  o Known problems
+  o Contact
+  o Disclaimer
+
+
+Summary
+=======
+
+  PHPhiler is a free, open-source program intended to be incorporated into an
+  existing PHP-based website.
+
+  It allows a person with administrator access to that website to auto- generate
+  directory and file listings of any directory that is accessible by the
+  webserver. It supplies direct HTTP-links to the files and directories, along
+  with other information such as size, modification date and the possibilty to
+  have the files auto-descripted by various means. Effectively, this enables
+  users to browse through the filesystem of a webserver.
+
+  The interface is customizable through CSS and all initial configuration is
+  done through a simple syntax in a seperate configuration file. It is possible
+  to retrieve the titles and descriptions of files in a variety of ways,
+  including the option of extracting these automatically from external files,
+  provided the information is contained in a predefined syntax.
+
+  PHPhiler is designed to be highly configurable, expandable and easy to
+  implement into existing PHP-based websites. It should be fairly simple to
+  extend the description retrieval mechanism with other filetypes (e.g.
+  MP3-files, word processor documents, etc.), provided information can be
+  retrieved from these filetypes through PHP. 
+  
+  And that's it. There is no database involved, no fancy backend, and no
+  additional coding required.
+  
+
+Archive contents
+================
+  The following files are included in the distribution archive:
+
+    README
+    ------
+      This file.
+
+    INSTALL
+    -------
+      Installation instructions.
+
+    CONFIG
+    -------
+      Configuration instructions.
+
+    HISTORY
+    -------
+      The revision history of PHPhiler.
+
+    LICENSE
+    -------
+      The license under which this program is released.
+
+    phphiler.config.sample.inc
+    -------------------
+      PHPhiler's sample configuration file (needs to be moved to the webserver
+      root and renamed to phphiler.config.inc).
+
+    phphiler.inc
+    ------------
+      Main script file (no need to change this).
+
+    phphiler.html.inc
+    -----------------
+      The script that generates the HTML output (no need to change this).
+
+    phphiler.functions.inc
+    ----------------------
+      Various general functions (no need to change this).
+
+    phphiler.sample.css
+    ------------
+      CSS style sheet for layout of the file listing. Can be altered to match
+      your website's layout. Must be included in your HTML header.
+
+
+Requirements
+============
+  PLEASE NOTE: These requirements are minimal. Since the program is still in
+  its early development stages, it has not been thoroughly tested with all
+  common combinations of hard- and software. If you come across errors in
+  this regard, don't hesitate to submit a bug report.
+
+  o Unix-like operating system (developed under Debian Linux 2.2.20)
+  o webserver with PHP enabled (developed under Apache 2.0.43+ and PHP 4.3.0+)
+  o administrative access to a website
+  o very basic PHP/CSS/HTML skills
+
+  It has been tested and is known to work under Novell Netware 6 and Apache.
+
+
+Known problems
+==============
+  This version of PHPhiler has only been tested in a Unix-like environment.
+  Thus, some aspects of the file manipulation mechanism may differ (and thus
+  not work properly) on other systems, e.g. Windows.
+
+
+Contact
+=======
+  Please see the project's website for current news and releases:
+
+    http://phphiler.sourceforge.net
+
+  The author can be contacted via e-mail at:
+
+    geddeth@users.sourceforge.net
+
+
+Disclaimer
+==========
+  This version of PHPhiler was released on February 3rd 2004.
+
+  It is copyright (c) 2003-2004 Achton N. Netherclift and released under the GNU
+  public license (GPL). Please see the file LICENSE for further information.
+
+
+(end of file README)

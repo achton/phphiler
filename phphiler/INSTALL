@@ -1,0 +1,106 @@
+____________________________________________________________________________
+PHPhiler 0.3.0 installation instructions
+Copyright (c) 2003-2004 Achton N. Netherclift
+____________________________________________________________________________
+
+
+This document covers the installation of PHPhiler in detail.
+
+Contents
+========
+  o Decompressing and file locations
+  o Incorporating PHPhiler into your site
+  o File permissions
+
+
+Decompressing and file locations
+================================
+  The distribution file is named after the following convention:
+    phphiler-x.x.x[-rcx].tar.[gz|bz2]
+
+  By default, the archive decompresses into a new directory called
+  'phphiler-x.x.x[-rcx]'. The name and location of this directory is not
+  important, however, as long as the webserver has read (and possibly
+  write) access to it.
+
+  PHPhiler expects to find the configuration file in the root directory of
+  your webserver, (often '/www/'), so this file has to be moved there after
+  the decompression. It must also be renamed from phphiler.config.sample.inc
+  to phphiler.config.inc.
+
+  The remaining .inc-files have to be placed in one single directory. It is
+  strongly recommended to dedicate a directory entirely to PHPhiler's source
+  files, but not required (in theory, anyway).
+
+
+Incorporating PHPhiler into your site
+=====================================
+
+  You should begin by setting the path variable for PHPhiler in the
+  configuration file, e.g.:
+
+    $this->setPHPhilerPath('phphiler/');
+
+  Then include PHPhiler's cascading style sheet in the HTML code for the
+  page that will render the file listing. This is also where you'll insert
+  the necessary PHP code that activates PHPhiler.
+
+    <link rel="stylesheet" type="text/css"
+          href="http://myserver.com/phphiler/phphiler.sample.css">
+
+  You could also move the contents of the CSS file to your own CSS file if
+  you have one.
+
+  Next make sure the main PHPhiler script is included:
+
+  <?php
+        require_once('/www/phphiler/phphiler.inc');
+  ?>
+
+  This requires the script to reside in the directory /www/phphiler/.
+
+  Now create a new PHPhiler object somewhere in your PHP script:
+
+  <?php
+        $myPHPhiler = new PHPhiler();
+  ?>
+
+  The name of the variable that holds the PHPhiler object is not important,
+  as long as you use it throughout for that particular table.
+
+  Finally, call PHPhiler's indexing function where you want the table to
+  appear on your webpage:
+
+  <?php
+        $myPHPhiler->index();
+  ?>
+
+  PHPhiler will now create a file listing of the current directory, using
+  the default options from the configuration file.
+
+  For more information on configuration options, please look at the file
+  CONFIG.
+
+
+File permissions
+================
+
+  PHPhiler contains certain (optional) features that require the webserver
+  to have write access to the filesystem; specifically to the directory
+  containing the indexed files.
+
+  When utilizing the feature that encapsulates listed files in a custom
+  header and footer (setSuffixActions is one of the settings that affects
+  this feature), it is done through a template file that is written to the
+  current directory on-the-fly. Therefore, the webserver needs to have write
+  access to the directory in question. If you do not wish to allow this (or
+  cannot due to some restriction or other), this feature will not be
+  available.
+
+  Thus far, all other features do not require write access. Due to the fact
+  that some system administrators see this issue as a security risk, the
+  development of PHPhiler will be striving towards minimizing writes to the
+  filesystem.
+
+
+(end of file INSTALL)
