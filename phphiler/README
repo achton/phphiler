@@ -1,5 +1,5 @@
 ____________________________________________________________________________
-PHPhiler 0.3.0 (unstable) readme
+PHPhiler 0.3.0 readme
 Copyright (c) 2003-2004 Achton N. Netherclift
 ____________________________________________________________________________
 
@@ -37,11 +37,11 @@ Summary
   implement into existing PHP-based websites. It should be fairly simple to
   extend the description retrieval mechanism with other filetypes (e.g.
   MP3-files, word processor documents, etc.), provided information can be
-  retrieved from these filetypes through PHP. 
-  
+  retrieved from these filetypes through PHP.
+
   And that's it. There is no database involved, no fancy backend, and no
   additional coding required.
-  
+
 
 Archive contents
 ================
