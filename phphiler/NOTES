@@ -1,0 +1,57 @@
+
+PHPHILER NOTES
+==============
+
+Directory stuff:
+----------------
+
+    Document root (abs):
+        is either
+            - Set in config: setDocRoot
+            - Not set: Apache $DOCUMENT_ROOT
+        - get with getDocRoot()
+
+
+    Startdir (abs/rel):
+        is either
+            - Constructor: PHPhiler (abs)
+            - Constructor: PHPhiler (rel)
+            - Not set: current directory (abs)
+        - get with $startdir
+
+
+    CWD (abs)
+        - get with $this->cwd
+
+    CWRD (rel)
+        - get with $this->cwrd
+
+
+
+PHPHILER ALGORITHM
+==================
+
+    * new phphiler object
+        > get config
+        > get debugger
+        > check for doc root
+        > check for phphiler source files
+        > check for actions
+        > if startdir was given, check if it was relative or absolute
+            > if relative
+                - convert to absolute with getcwd()
+            - set cwd to startdir
+            - set cwrd to NULL
+        > if startdir was NOT given
+            - set cwd to getcwd()
+
+
+    * index is called
+        - save original cwd
+        - call update with cwd and max descend levels
+
+
+
+
+
+
