@@ -54,8 +54,8 @@ Project homepage is found at      : http://phphiler.sourceforge.net
   // Function that simply checks an associative array of keys and bitstrings,
   // returning true if the bit number given is set in one or more of the strings.
   function isBitSetInArray($ar, $bitno) {
-    foreach($ar as $key => $bits) {
-      if (isBitSet($bits, $bitno)) return TRUE;
+      foreach($ar as $key => $bits) {
+      if (isBitSet($bits, $bitno)) return true;
     }
     return false;
   }

@@ -25,6 +25,8 @@ Change:
   - Most settings now stored in the GLOBALS array instead of as object
     variables
   - Unstable and stable branches merged
+  - Attempting to sort a table by a column that's been excluded now results
+    in an error.
 
 Bugfix:
   - Custom date string now works for files as well
@@ -32,6 +34,8 @@ Bugfix:
   - Lots of unnecessary file access eliminated
   - External file retrieval defaults to file- or dirname if no <title> tag
     is present
+  - CSS for navigation and footer did not work
+  - Header/footer encapsulation did not work properly for tables in subdirs
 
 PHPhiler 0.1.2-rc1
 ==================
