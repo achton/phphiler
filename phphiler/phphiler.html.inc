@@ -97,8 +97,7 @@ class PHPhilerHTML {
         if ($page == ($cur_page)) {
           $prev_row_num = ($page-1) * $max_rows;
           $next_row_num = ($page+1) * $max_rows;
-
-          $pages_html .= '<strong title="' . $msg_ar[2] . ' '. ($cur_page+1) .'" style="color:#a22;">' . ($page+1) . '</strong>&nbsp;';
+          $pages_html .= '<span class="phphiler-navigation-link" title="' . $msg_ar[2] . ' '. ($cur_page+1) .'" >' . ($page+1) . '</span>&nbsp;';
 
         } else {
           $pages_html .= '<a href="?id=' . $GLOBALS['PHPH_TABLE_ID']

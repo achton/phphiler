@@ -402,7 +402,7 @@ class PHPhiler {
           }
           $this->filepaths[$file] = $this->cwd . $file;
           if ($fileinfo['uri'] == NULL) {
-            $fileinfo['uri'] = str_replace ($this->getDocRoot(), '', $this->filepaths[$file]);
+            $fileinfo['uri'] = '/' . str_replace ($this->getDocRoot(), '', $this->filepaths[$file]);
           }
           $this->fileuris[$file] = $fileinfo['uri'];
 
@@ -540,11 +540,11 @@ class PHPhiler {
     // close the file again
     @fclose($fh);
 
-    $string .= "\n<pre>\n";
+    $string .= "\n<pre><div>\n";
     // append some php code to the string
     $string .= "\n<?php\n";
-    $string .= 'if ($_GET[\'file\']) { readfile(\''.$this->cwd.'/'.'\'.urldecode($_GET[\'file\'])); } ';
-    $string .= "\n?>\n</pre>\n";
+    $string .= 'if ($_GET[\'file\']) { echo htmlentities(file_get_contents(\''.$this->cwd.'\'.urldecode($_GET[\'file\']))); } ';
+    $string .= "\n?>\n</div></pre>\n";
 
     // retrieve the full footer path from the webserver and the config
     $footer_path = $this->getDocRoot() . $this->getHTMLFooter();

@@ -85,6 +85,11 @@
   background            : #B0B0B0;
 }
 
+.phphiler-navigation .phphiler-navigation-link {
+  font-weight           : bold;
+  color                 : #A02020;
+}
+
 /* the footer at the bottom of each listing */
 .phphiler-footer {
   font-size             : 9px;

@@ -1,7 +1,21 @@
 ____________________________________________________________________________
-PHPhiler 0.3.0 revision history
+PHPhiler revision history
 Copyright (c) 2003-2004 Achton N. Netherclift
 ____________________________________________________________________________
+
+
+PHPhiler 0.3.1
+==============
+Released (not yet)
+
+Feature:
+
+Change:
+
+Bugfix:
+  - Fixed URL for indexed subdirs, which was generated wrong in some cases
+  - Files read with templates now handles HTML/XML/etc. properly
+  - Still some inline CSS leftover - moved to style sheet
 
 
 PHPhiler 0.3.0
@@ -40,6 +54,7 @@ Bugfix:
   - CSS for navigation and footer did not work
   - Header/footer encapsulation did not work properly for tables in subdirs
 
+
 PHPhiler 0.1.2-rc1
 ==================
 Released 3rd February 2004
@@ -60,6 +75,7 @@ Bugfix:
   - HTML divider between dirs and files now properly inserted (and left out)
     where appropriate
 
+
 PHPhiler 0.1.1-rc2
 ==================
 Released 19th January 2004
@@ -76,6 +92,7 @@ Bugfix:
  - Subdirectories linked correctly. (Originally fixed in rc1)
  - Constants DESC and DESCR were mixed up in the HTML object. Fixed.
  - Changed back to original directory after index of subdir
+
 
 PHPhiler 0.1.1-rc1
 ==================
