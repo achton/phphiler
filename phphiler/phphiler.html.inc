@@ -35,6 +35,7 @@ class PHPhilerHTML {
 
   // Class constructor.
   function PHPhilerHTML(&$PHPhiler) {
+//echo "<b>HTML</b>: instantiating HTML<br>";
 
     // keep a reference to the PHPhiler object in a class variable
     $this->__phphiler = &$PHPhiler;
@@ -226,7 +227,7 @@ class PHPhilerHTML {
     foreach ($this->__phphiler->getColumnHeaders() as $col => $colname) {
       switch ($col) {
          // title is a special case (ha ha)
-        case 'title':
+        case PHPH_TITLE:
           $string .= '<td class="phphiler-'.PHPH_TITLE.'-cols'
                     . $this->__phphiler->getCSSsuffix() . '">' . "\n"
                     . '<a href="' .$link_string.'" ' . $statusbartext.'>' . "\n"
@@ -234,7 +235,7 @@ class PHPhilerHTML {
                     . '</a></td>' . "\n";
           break;
         // the other columns all need the same HTML code
-        default :
+        default:
           $string .= '<td class="phphiler-'.strtolower($col).'-cols'
                     . $this->__phphiler->getCSSsuffix() .'">' . "\n"
                     . $dirinfo[$col]
@@ -305,11 +306,12 @@ class PHPhilerHTML {
     $string = '<tr class="phphiler-file-rows' . $this->__phphiler->getCSSsuffix() .'">';
 
     foreach ($this->__phphiler->getColumnHeaders() as $col => $colname) {
+//echo "<b>HTML</b>: Going for column $col <br>";
       switch ($col) {
          // title is a special case (ha ha)
-        case 'title':
+        case PHPH_TITLE:
           // translate the title string
-          $title = translate_string($fileinfo['title'], $GLOBALS['PHPH_URI_FUNC'], $GLOBALS['PHPH_URI_ARGS']);
+          $title = translate_string($fileinfo[PHPH_TITLE], $GLOBALS['PHPH_URI_FUNC'], $GLOBALS['PHPH_URI_ARGS']);
           $string .= '<td class="phphiler-'.PHPH_TITLE.'-cols'
                     . $this->__phphiler->getCSSsuffix() .'">' . "\n"
                     . '<a href="' . $link_string.'" '.$target_string . $statusbartext.'>' . "\n"
