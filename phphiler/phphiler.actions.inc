@@ -34,9 +34,12 @@ function PHPH_NFOfile ($file) {
   // suffixes in the setSuffixSettings array.
   $suffix = 'nfo';
 
+  // strip the suffix
+  $file = stripSuffix($file);
+
   // define the comment file to read tags from
   $commentfile = $file . '.' . $suffix;
-
+//echo "<b>PHP_NFO:</b> $commentfile <br>";
   if (!file_exists($commentfile)) {
     return FALSE;
   }
