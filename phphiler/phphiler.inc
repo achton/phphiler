@@ -402,10 +402,10 @@ class PHPhiler {
           }
           $this->filepaths[$file] = $this->cwd . $file;
           if ($fileinfo['uri'] == NULL) {
-
             $fileinfo['uri'] = str_replace ($this->getDocRoot(), '', $this->filepaths[$file]);
           }
           $this->fileuris[$file] = $fileinfo['uri'];
+
           // maybe create a template file (no need to do this for directories
           if ($this->getAction($this->filepaths[$file], 1) == TRUE) {
               $this->createTemplateFile();

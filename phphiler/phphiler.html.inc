@@ -255,7 +255,7 @@ class PHPhilerHTML {
     // check if a uri for the file has been given
     } elseif (!empty($this->__phphiler->fileuris[$file])) {
       $link_string = $this->__phphiler->fileuris[$file];
-      $link_string = '/' . $link_string;
+      //$link_string = '/' . $link_string;
     // else link directly to the file
     } else {
       $link_string = translate_string($this->__phphiler->filepaths[$file],
