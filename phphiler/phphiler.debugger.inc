@@ -16,6 +16,12 @@ class PHPhiler_Debugger {
     var $LogPath = NULL;
 
     /**
+     * URI to the debug log (excluding filename).
+     * @var string
+     */
+    var $LogURI = NULL;
+
+    /**
      * Name of the debug log.
      * @var string
      */
@@ -27,9 +33,10 @@ class PHPhiler_Debugger {
     * @param    string  $path    The path to the debug log
     * @return   void
     */
-    function PHPhiler_Debugger($path) {
+    function PHPhiler_Debugger($path, $uri) {
         // set the path to the debug log
         $this->LogPath = $path;
+        $this->LogURI = $uri;
 
         // do some errorchecking
         if (!file_exists($this->LogPath)) {
@@ -118,7 +125,7 @@ class PHPhiler_Debugger {
           config ='toolbar=no, location=no, directories=no, status=no, menubar=no, width=800, resizable=yes, scrollbars=yes';
           output = window.open ("
 END;
-        echo $this->LogPath . $this->LogFileName;
+        echo $this->LogURI . $this->LogFileName;
         echo '","outputwindow", config);</script>';
     }
 
