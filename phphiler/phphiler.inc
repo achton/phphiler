@@ -44,7 +44,7 @@ require_once('phphiler.debugger.inc');
 class PHPhiler {
 
   // private variables
-  var $_phphiler_ver        = '0.3.1cvs'; // version number
+  var $_phphiler_ver        = '0.4.0cvs'; // version number
   var $_phphiler_link       = 'http://phphiler.sf.net'; // link address
 
   var $_statusbar_comment   = NULL;     // what to display in the status bar (string/keyword)
@@ -62,7 +62,7 @@ class PHPhiler {
 
   var $_total_entries       = NULL;     // number of files in this listing ($int)
 
-  var $_debug_mode          = false;    // debug mode on/off (bool)
+  var $_debug_mode          = true;     // debug mode on/off (bool)
   var $Debugger             = NULL;     // reference to the debugger instance
 
   var $files                = array();  // actual filenames and doctitles ('file' => 'title')
@@ -111,20 +111,19 @@ class PHPhiler {
 
     unset($GLOBALS['PHPH_CSS_SUFFIX']);
 
-    // include the configuration file
-    if (isset($GLOBALS['PHPH_CONFIG_FILE'])) {
-        $this->configfilename = $GLOBALS['PHPH_CONFIG_FILE'];
-    } else {
-        exit("<b style=\"color:red;\">ERROR:</b> \$GLOBALS['PHPH_CONFIG_FILE'] is not set.<br>");
-    }
-
     // create a debugger instance (PHPhiler path must be set!)
     if ($this->_debug_mode === true) {
         $this->Debugger = new PHPhiler_Debugger($this->getPHPhilerPath());
     }
-
-    // get configuration settings
-    require_once($this->configfilename);
+    // include the configuration file
+    if (isset($GLOBALS['PHPH_CONFIG_FILE'])) {
+        $this->configfilename = $GLOBALS['PHPH_CONFIG_FILE'];
+        // NB: need to require (not require_once) config *every* time in order to get class
+        // variables configured. This *should* change once all config options are moved to $GLOBAL
+        require($this->configfilename);
+    } else {
+        exit("<b style=\"color:red;\">ERROR:</b> \$GLOBALS['PHPH_CONFIG_FILE'] is not set.<br>");
+    }
 
     // calculate URI to PHPhiler (requires configuration to be set)
     $phph_pos = strpos($this->getPHPhilerPath(), $this->getDocRoot());
@@ -257,9 +256,9 @@ class PHPhiler {
 
     // check if the column we sort by is also shown or display an error
     if (array_key_exists($this->_sortcolumn, $this->getColumnHeaders()) === false) {
-        exit ("<b>CONFIG ERROR:</b> The column to sort by (setSortOrder) is not included in the column headers (setColumnHeaders).<br>");
+        exit ("<b>CONFIG ERROR:</b> The column to sort by (setSortOrder) is not included in the
+              column headers (setColumnHeaders).<br>");
     }
-
 
 
     $sortitem = NULL;
