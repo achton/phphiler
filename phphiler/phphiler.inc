@@ -95,6 +95,9 @@ class PHPhiler {
     // clear PHP's file status cache
     clearstatcache();
 
+    // set absolute PHPhiler path by using script path until last forward slash
+    $this->setPHPhilerPath(substr(__FILE__, 0, strrpos(__FILE__, '/')+1));
+
     // constants
     if (!defined('PHPH_TITLE')) define ('PHPH_TITLE', 'title');
     if (!defined('PHPH_SIZE')) define ('PHPH_SIZE', 'size');
@@ -114,12 +117,23 @@ class PHPhiler {
     } else {
         exit("<b style=\"color:red;\">ERROR:</b> \$GLOBALS['PHPH_CONFIG_FILE'] is not set.<br>");
     }
+
+    // create a debugger instance (PHPhiler path must be set!)
+    if ($this->_debug_mode === true) {
+        $this->Debugger = new PHPhiler_Debugger($this->getPHPhilerPath());
+    }
+
+    // get configuration settings
     require_once($this->configfilename);
 
-    // create a debugger instance
-    if ($this->_debug_mode === true) {
-        $this->Debugger =& new PHPhiler_Debugger($this->getDocRoot() . $this->getPHPhilerPath(),
-                                                 $this);
+    // calculate URI to PHPhiler (requires configuration to be set)
+    $phph_pos = strpos($this->getPHPhilerPath(), $this->getDocRoot());
+    if ($phph_pos !== FALSE) {
+        $phph_rel = substr($this->getPHPhilerPath(), strlen($this->getDocRoot()));
+        $phph_uri = $this->getDocRootURI() . $phph_rel;
+        $this->setPHPhilerURI($phph_uri);
+    } else {
+        exit("<b style=\"color:red;\">ERROR:</b>Unable to determine URI to PHPhiler directory.<br>");
     }
 
     // set the global constants for version no. and project link
@@ -133,32 +147,32 @@ class PHPhiler {
     }
 
     // check if we can find PHPhiler source files
-    if (!file_exists($this->getDocRoot() . $this->getPHPhilerPath() . 'phphiler.inc')) {
+    if (!file_exists($this->getPHPhilerPath() . 'phphiler.inc')) {
         exit("<b style=\"color:red;\">ERROR:</b> Cannot find PHPhiler source files. Please check config of setPHPhilerPath().<br>");
     }
 
     // include actions if they exist
-    if (file_exists($this->getDocRoot() . $this->getPHPhilerPath() . 'phphiler.actions.inc')) {
-        require_once($this->getDocRoot() . $this->getPHPhilerPath() . 'phphiler.actions.inc');
+    if (file_exists($this->getPHPhilerPath() . 'phphiler.actions.inc')) {
+        require_once($this->getPHPhilerPath() . 'phphiler.actions.inc');
     }
-    if (file_exists($this->getDocRoot() . $this->getPHPhilerPath() . 'phphiler.custom.actions.inc')) {
-        require_once($this->getDocRoot() . $this->getPHPhilerPath() . 'phphiler.custom.actions.inc');
+    if (file_exists($this->getPHPhilerPath() . 'phphiler.custom.actions.inc')) {
+        require_once($this->getPHPhilerPath() . 'phphiler.custom.actions.inc');
     }
 
     // pop the trailing slash off the end
     //$doc_root_notrail = substr($doc_root, 0, strlen($doc_root)-1);
     $doc_root_notrail = getcwd();
         $this->toDebugger(E_NOTICE, "DOCROOT: " . $this->getDocRoot(), __FUNCTION__, __LINE__);
-        $this->toDebugger(E_NOTICE, "DOCROOT NT: ".$doc_root_notrail, __FUNCTION__, __LINE__);
-        $this->toDebugger(E_NOTICE, "SCRIPTNAME: ".$_SERVER['SCRIPT_NAME'], __FUNCTION__, __LINE__);
-        $this->toDebugger(E_NOTICE, "GETCWD()  : ". getcwd(), __FUNCTION__, __LINE__);
+        $this->toDebugger(E_NOTICE, "DOCROOT NT: " . $doc_root_notrail, __FUNCTION__, __LINE__);
+        $this->toDebugger(E_NOTICE, "SCRIPTNAME: " . $_SERVER['SCRIPT_NAME'], __FUNCTION__, __LINE__);
+        $this->toDebugger(E_NOTICE, "GETCWD()  : " . getcwd(), __FUNCTION__, __LINE__);
 
     // Set the current directory and absolute working directory
     //if (strncasecmp(getcwd(), $doc_root_notrail, strlen(getcwd()))
     $script_name_ar = explode('/',  $_SERVER['SCRIPT_NAME']);
     $this->file_self = array_pop($script_name_ar);
-        $this->toDebugger(E_NOTICE, "FILE_SELF: ".$this->file_self, __FUNCTION__, __LINE__);
-        $this->toDebugger(E_NOTICE, "SCRIPTNAME: ".var_export($script_name_ar, true), __FUNCTION__, __LINE__);
+        $this->toDebugger(E_NOTICE, "FILE_SELF: " . $this->file_self, __FUNCTION__, __LINE__);
+        $this->toDebugger(E_NOTICE, "SCRIPTNAME: " . var_export($script_name_ar, true), __FUNCTION__, __LINE__);
 
     // if startdir was given
     if (isset($startdir)) {
@@ -175,10 +189,15 @@ class PHPhiler {
                 && strncasecmp($startdir, 'sys:', 4) !== 0
                 && strncasecmp($startdir, 'vol1:', 5) !== 0 )
         {
-                $this->toDebugger(E_NOTICE, "STARTDIR_REL:" . $startdir, __FUNCTION__, __LINE__);
-            // convert to absolute path
-            //$startdir = implode('/', $script_name_ar) . '/' . $startdir;
+                $this->toDebugger(E_NOTICE, "STARTDIR_REL:" . $startdir,
+                                  __FUNCTION__, __LINE__, __FILE__);
+
+            // so let's convert relative to absolute path
             $startdir = getcwd() . '/' . $startdir;
+
+                $this->toDebugger(E_NOTICE, "STARTDIR:" . $startdir,
+                                  __FUNCTION__, __LINE__, __FILE__);
+
         }
 
         // set the supplied directory to current working dir and
@@ -187,9 +206,10 @@ class PHPhiler {
         // set the relative dir to the startdir - to begin with it's the top directory
         $this->cwrd = ''; // current working relative dir
 
-            $this->toDebugger(E_NOTICE, "STARTDIR:" . $startdir, __FUNCTION__, __LINE__);
-            $this->toDebugger(E_NOTICE, "CWD:" . $this->cwd, __FUNCTION__, __LINE__);
-            $this->toDebugger(E_NOTICE, "CWRD:" . $this->cwrd, __FUNCTION__, __LINE__);
+            $this->toDebugger(E_NOTICE, "CWD:" . $this->cwd,
+                              __FUNCTION__, __LINE__, __FILE__);
+            $this->toDebugger(E_NOTICE, "CWRD:" . $this->cwrd,
+                              __FUNCTION__, __LINE__, __FILE__);
 
     // if startdir was NOT given
     } else {
@@ -198,7 +218,8 @@ class PHPhiler {
         $this->cwd = getcwd() . '/';
         // resolve any symbolic links
         $this->cwd = realpath($this->cwd) . '/';
-            $this->toDebugger(E_NOTICE, "CWD: " . $this->cwd, __FUNCTION__, __LINE__);
+            $this->toDebugger(E_NOTICE, "CWD: " . $this->cwd,
+                              __FUNCTION__, __LINE__, __FILE__);
 
         // do some basic error checking
         if (!is_dir($this->cwd)) {
@@ -215,7 +236,8 @@ class PHPhiler {
         $reldir = substr($reldir, 1);
         // if it's the root dir, insert a './' instead of '/'
         $this->cwrd = ($reldir == '/' ? './' : $reldir); // current working relative dir
-            $this->toDebugger(E_NOTICE, "CWRD: " . $this->cwrd, __FUNCTION__, __LINE__);
+            $this->toDebugger(E_NOTICE, "CWRD: " . $this->cwrd,
+                              __FUNCTION__, __LINE__, __FILE__);
     }
 
   }
@@ -234,8 +256,8 @@ class PHPhiler {
     chdir($org_cwd);
 
     // check if the column we sort by is also shown or display an error
-    if (!array_key_exists($this->_sortcolumn, $this->getColumnHeaders())) {
-        exit ("<b>CONFIG ERROR:</b> The column to sort by is not included in the column headers.<br>");
+    if (array_key_exists($this->_sortcolumn, $this->getColumnHeaders()) === false) {
+        exit ("<b>CONFIG ERROR:</b> The column to sort by (setSortOrder) is not included in the column headers (setColumnHeaders).<br>");
     }
 
 
@@ -257,15 +279,15 @@ class PHPhiler {
             break;
           case PHPH_SIZE :
             asort($this->filesizes, SORT_NUMERIC);
-            $sortitem = &$this->filesizes;
+            $sortitem =& $this->filesizes;
             break;
           case PHPH_DATE :
             asort($this->filedates, SORT_NUMERIC);
-            $sortitem = &$this->filedates;
+            $sortitem =& $this->filedates;
             break;
           case PHPH_DESCR :
             uasort($this->filedescr, "strcasecmp");
-            $sortitem = &$this->filedescr;
+            $sortitem =& $this->filedescr;
             break;
         }
         break;
@@ -280,16 +302,16 @@ class PHPhiler {
             break;
           case PHPH_SIZE :
             arsort($this->filesizes, SORT_NUMERIC);
-            $sortitem = &$this->filesizes;
+            $sortitem =& $this->filesizes;
             break;
           case PHPH_DATE :
             arsort($this->filedates, SORT_NUMERIC);
-            $sortitem = &$this->filedates;
+            $sortitem =& $this->filedates;
             break;
           case PHPH_DESCR :
             uasort($this->filedescr, "strcasecmp");
             $this->filedescr = array_reverse($this->filedescr);
-            $sortitem = &$this->filedescr;
+            $sortitem =& $this->filedescr;
             break;
         }
         break;
@@ -375,7 +397,10 @@ class PHPhiler {
     // finally, print the HTML output to the document
     echo $html->getHtml();
 
-    $this->Debugger->openDebugger();
+    // if debugging is enabled, open the debug window last
+    if ($this->_debug_mode === true) {
+        $this->Debugger->openDebugger($this->getPHPhilerURI());
+    }
   }
 
 
@@ -459,7 +484,7 @@ class PHPhiler {
         // if it's a directory and we want to include them in the listings
         elseif (is_dir($file)) {
           // ref to file for logical reasons
-          $dir = &$file;
+          $dir =& $file;
           // only enter dirinfo if directories are to be shown
           if ($this->getIncludeSubDirectories() === TRUE) {
             // get the actions for the current suffix
@@ -623,29 +648,45 @@ class PHPhiler {
     exit ("<b style=\"color:red;\">ERROR:</b> suffix '$suf' for file '$file' not defined!<br>");
   }
 
-  // Function to return the suffix only
-  function getSuffix($file) {
-    //$file = translate_string($file, $GLOBALS['PHPH_PATH_FUNC'], $GLOBALS['PHPH_PATH_ARGS']);
-    if (is_file($file)) {
-      $pathinfo = pathinfo($file);
-      if ($pathinfo['extension'] !== '') {
-        return strtolower($pathinfo['extension']);
-      }
-    } elseif (is_dir($file)) {
-        return PHPH_DIR; // special case keyword
+    // Function to return the suffix only
+    function getSuffix($file) {
+        //$file = translate_string($file, $GLOBALS['PHPH_PATH_FUNC'], $GLOBALS['PHPH_PATH_ARGS']);
+        if (is_file($file)) {
+            $pathinfo = pathinfo($file);
+            if ($pathinfo['extension'] !== '') {
+                return strtolower($pathinfo['extension']);
+            }
+        } elseif (is_dir($file)) {
+            return PHPH_DIR; // special case keyword
+        }
+        exit ("<b style=\"color:red;\">ERROR:</b> Could not determine suffix for file '$file' in dir '".$this->cwd."'<br>");
     }
-    exit ("<b style=\"color:red;\">ERROR:</b> Could not determine suffix for file '$file' in dir '".$this->cwd."'<br>");
-  }
 
-  // wrapper function which checks if debugging is enabled before passing debug info to the debugger
-  function toDebugger($int, $string, $function=NULL, $line=NULL) {
-      if ($this->_debug_mode === true && $this->Debugger !== NULL) {
-          $this->Debugger->toDebugger($int, $string, $function, $line);
-      } elseif ($this->_debug_mode === true && $this->Debugger === NULL) {
-          exit ("<b style=\"color:red;\">ERROR:</b> Debugger turned on but object was NULL!<br>");
-      }
-  }
+    /**
+     * Wrapper function which checks if debugging is enabled before passing debug info to the
+     * debugger
+     *
+     * @param    int     $int            The error level of the message (E_NOTICE, E_WARNING, E_ERROR)
+     * @param    string  $string         Description of the error.
+     * @param    string  $function       Name of the calling function.
+     * @param    mixed   $line           The line number
+     * @return   void
+     */
+    function toDebugger($int, $string, $function=NULL, $line=NULL, $file=NULL) {
+        if ($this->_debug_mode === true) {
+            if ($this->Debugger === NULL) {
+                exit ("<b style=\"color:red;\">ERROR:</b> Debugger is turned on but Debugger instance is empty (NULL)!<br>");
+            } else {
+                $this->Debugger->toDebugger($int, $string, $function, $line, $file);
+            }
+        }
+    }
 
+
+  function error2($string, $function=NULL, $line=NULL, $file=NULL) {
+
+      exit;
+  }
 
   // _______________________________________________________________________ //
   // Set and get functions
@@ -655,7 +696,7 @@ class PHPhiler {
   function setSuffixSettings() {
     $suf_ar = func_get_args();
     $GLOBALS['PHPH_SUFFIXES'] = array();
-    $suffixes = &$GLOBALS['PHPH_SUFFIXES'];
+    $suffixes =& $GLOBALS['PHPH_SUFFIXES'];
     foreach($suf_ar as $suf_act) {
       if (!is_array($suf_act)) {
         exit ("<b style=\"color:red;\">ERROR:</b> Config: '$suf_act' is not an array.<br>");
@@ -729,8 +770,12 @@ class PHPhiler {
   }
 
   function setSortOrder($column, $order) {
-    $this->_sortcolumn = $column;
-    $this->_sortorder = $order;
+      $this->toDebugger(E_NOTICE, "Sort column: " . $this->_sortcolumn,
+                        __FUNCTION__, __LINE__, __FILE__);
+      $this->toDebugger(E_NOTICE, "Sort order: " . $this->_sortorder,
+                        __FUNCTION__, __LINE__, __FILE__);
+      $this->_sortcolumn = $column;
+      $this->_sortorder = $order;
   }
 
   function setDateFormat($string) {
@@ -888,6 +933,21 @@ class PHPhiler {
     return $GLOBALS['PHPH_DOC_ROOT'];
   }
 
+  function setDocRootURI($string) {
+    $GLOBALS['PHPH_DOC_ROOT_URI'] = $string;
+  }
+
+  function getDocRootURI() {
+    return $GLOBALS['PHPH_DOC_ROOT_URI'];
+  }
+
+  function setPHPhilerURI($string) {
+    $GLOBALS['PHPH_URI'] = $string;
+  }
+
+  function getPHPhilerURI() {
+    return $GLOBALS['PHPH_URI'];
+  }
   // Set the complete absolute path to the PHPhiler source files.
   function setPHPhilerPath($string) {
     $GLOBALS['PHPH_PATH'] = $string;
