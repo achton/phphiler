@@ -6,7 +6,7 @@ ____________________________________________________________________________
 
 PHPhiler 0.3.0
 ==============
-Released [Not released]
+Released September 21st 2004
 
 Feature:
   - Suffix actions are now properly implemented so that a suffix can be
@@ -17,6 +17,7 @@ Feature:
     DOCUMENT_ROOT
   - File lists can now descend into an arbitrary number of subdirectories
   - A bit more error handling implemented (not quite there yet)
+  - Support for auto-including custom action file (if present).
 
 Change:
   - Navigation links have been expanded, and the text can be translated
@@ -27,6 +28,8 @@ Change:
   - Unstable and stable branches merged
   - Attempting to sort a table by a column that's been excluded now results
     in an error.
+  - Documentation now points to website for configuration/installation
+    instructions.
 
 Bugfix:
   - Custom date string now works for files as well
