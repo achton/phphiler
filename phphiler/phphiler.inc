@@ -43,7 +43,7 @@ require_once('phphiler.html.inc');
 class PHPhiler {
 
   // private variables
-  var $__phphiler_ver       = '0.3.0-cvs'; // version number
+  var $__phphiler_ver       = '0.3.0'; // version number
   var $__phphiler_link      = 'http://phphiler.sf.net'; // link address
 
   var $__statusbar_comment  = NULL;     // what to display in the status bar (string/keyword)
