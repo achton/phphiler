@@ -290,13 +290,14 @@ class PHPhilerHTML {
     // check if a uri for the file has been given
     } elseif (!empty($this->__phphiler->fileuris[$file])) {
       $link_string = $this->__phphiler->fileuris[$file];
+      $link_string = '/' . $link_string;
     // else link directly to the file
     } else {
       $link_string = translate_string($this->__phphiler->filepaths[$file],
                                       $GLOBALS['PHPH_PATH_FUNC'],
                                       $GLOBALS['PHPH_PATH_ARGS']);
+      $link_string = '/' . $link_string;
     }
-    $link_string = '/' . $link_string;
 //echo "<b>HTML</b>: URI for file '$file' is '".$this->__phphiler->fileuris[$file]."' <br>";
 
     // set the contents of the statusbar when the link is hovered
@@ -334,7 +335,7 @@ class PHPhilerHTML {
   // Function that returns the HTML footer to add to table listings.
   function getHtmlFooter() {
     $string .= '<tr><td colspan="'. sizeof($this->__phphiler->getColumnHeaders()) .'" '
-              . 'class="phphiler-footer"> Indexed with '
+              . 'class="phphiler-footer' . $this->__phphiler->getCSSsuffix() .'"> Indexed with '
               . '<a href="' . PHPHILER_LINK . '">PHPHiL&#931;R</a> ' . "\n"
               . PHPHILER_VER . ' &copy; 2003-2004. ' . $this->__exec_string
               . '</td></tr>' . "\n";
