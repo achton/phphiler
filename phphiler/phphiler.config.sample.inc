@@ -48,7 +48,7 @@ $this->setExcludedElements( array('testdir',
 
 // Set the maximum file and/or directory entries that are shown at any one
 // time in a file listing. 0 means no limit.
-$this->setMaxEntries(0);
+$this->setMaxEntries(10);
 
 
 // ________________________________________________________________________
@@ -108,6 +108,7 @@ $this->setCharset('ISO-8859-1');
 $this->setSuffixSettings( array( PHPH_DIR, FALSE, FALSE ),
                           array( 'txt', TRUE, FALSE ),
                           array( 'html', FALSE, TRUE, 'PHPH_NFOfile' ),
+                          array('gif', FALSE, FALSE),
                           array( 'mp3', FALSE, TRUE, 'MyAction', 'PHPH_NFOfile' ),
                          );
 
