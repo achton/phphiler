@@ -16,12 +16,6 @@ class PHPhiler_Debugger {
     var $LogPath = NULL;
 
     /**
-     * URI to the debug log (excluding filename).
-     * @var string
-     */
-    var $LogURI = NULL;
-
-    /**
      * Name of the debug log.
      * @var string
      */
@@ -33,10 +27,9 @@ class PHPhiler_Debugger {
     * @param    string  $path    The path to the debug log
     * @return   void
     */
-    function PHPhiler_Debugger($path, $uri) {
+    function PHPhiler_Debugger($path) {
         // set the path to the debug log
         $this->LogPath = $path;
-        $this->LogURI = $uri;
 
         // do some errorchecking
         if (!file_exists($this->LogPath)) {
@@ -69,7 +62,7 @@ class PHPhiler_Debugger {
     * @param    mixed   $line           The line number
     * @return   void
     */
-    function toDebugger($int, $string, $function=NULL, $line=NULL) {
+    function toDebugger($int, $string, $function=NULL, $line=NULL, $file=NULL) {
 
         $stringout = NULL;
 
@@ -77,23 +70,27 @@ class PHPhiler_Debugger {
         switch($int) {
             // just a notice, nothing important
             case E_NOTICE :
-                $stringout .= '<b>NOTICE:</b>  [f ' . $function . '] [l ' . $line . ']&nbsp;&nbsp;' . $string . "\n" . '<br>';
+                $stringout .= '<span>';
+                $stringout .= '<b>NOTICE:</b>';
                 break;
             // a warning, this is serious
             case E_WARNING :
                 $stringout .= '<span style="color:red;">';
-                $stringout .= '<b>WARNING:</b>  [f ' . $function . '] [l ' . $line . ']&nbsp;&nbsp;' . $string . "\n" . '<br>';
-                $stringout .= '</span>' . "\n" . '<br>';
+                $stringout .= '<b>WARNING:</b>';
                 break;
             // an error, fix it now!
             case E_ERROR :
                 $stringout .= '<span style="color:red;">';
-                $stringout .= '<b><u>ERROR:</b>  [f ' . $function . '] [l ' . $line . ']&nbsp;&nbsp;' . $string . "\n" . '<br>';
-                $stringout .= '</span>' . "\n" . '<br>';
+                $stringout .= '<b><u>ERROR:</b>';
                 break;
             default :
-                // if the error level doesn't exist, do nothing
+                $stringout .= '<span>';
+
         }
+
+        $stringout .= '[f ' . $function . '] [l ' . $line . ']&nbsp;&nbsp;' . $string . "\n" . '<br>';
+        $stringout .= '</span>' . "\n" . '<br>';
+
 
         // write to the debug log and close it
         $fh = fopen($this->LogPath . $this->LogFileName, 'a');
@@ -108,7 +105,7 @@ class PHPhiler_Debugger {
     *
     * @return void
     */
-    function openDebugger() {
+    function openDebugger($LogURI) {
 
         // open the file in append mode
         $fh = @fopen($this->LogPath . $this->LogFileName, 'a');
@@ -125,7 +122,7 @@ class PHPhiler_Debugger {
           config ='toolbar=no, location=no, directories=no, status=no, menubar=no, width=800, resizable=yes, scrollbars=yes';
           output = window.open ("
 END;
-        echo $this->LogURI . $this->LogFileName;
+        echo $LogURI . $this->LogFileName;
         echo '","outputwindow", config);</script>';
     }
 
