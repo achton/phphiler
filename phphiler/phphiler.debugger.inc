@@ -46,7 +46,40 @@ class PHPhiler_Debugger {
         $fh = @fopen($this->LogPath . $this->LogFileName, 'a') or exit('ERROR: PHPhiler_Debugger(): Couldn\'t create debug log file.');
 
         // write a header to the debug log
-        $stringout = '<html><head><title>Debugger</title></head><body><code>';
+        $stringout = <<<END
+        <html>
+        <head>
+        <title>Debugger</title>
+        <style type="text/css">
+        body {
+            background-color : #eee;
+            font-family : verdana;
+            font-size : 12px;
+        }
+        body>div {
+            border : 1px solid #aaa;
+            margin : 4px;
+            margin-bottom : 8px;
+            padding : 4px;
+        }
+        .notice, .warning, .error {
+            font-weight : bold;
+        }
+        .notice {
+            background-color : #ffff99;
+        }
+        .warning {
+            background-color : #ffff99;
+        }
+        .error {
+            text-decoration : underline;
+            background-color : #ffff99;
+        }
+
+        </style>
+        </head>
+        <body>
+END;
         fwrite($fh, $stringout);
         fclose($fh);
 
@@ -64,33 +97,33 @@ class PHPhiler_Debugger {
     */
     function toDebugger($int, $string, $function=NULL, $line=NULL, $file=NULL) {
 
+        $filename = substr($file, strrpos($file, '/')+1);
+
         $stringout = NULL;
 
-        // check the error_reporting level
+        // check the error_reporting level and set some HTML accordingly
         switch($int) {
             // just a notice, nothing important
             case E_NOTICE :
-                $stringout .= '<span>';
-                $stringout .= '<b>NOTICE:</b>';
+                $e_level .= '<div class="notice">NOTICE</div>';
                 break;
             // a warning, this is serious
             case E_WARNING :
-                $stringout .= '<span style="color:red;">';
-                $stringout .= '<b>WARNING:</b>';
+                $e_level .= '<div class="warning">WARNING</div>';
                 break;
             // an error, fix it now!
             case E_ERROR :
-                $stringout .= '<span style="color:red;">';
-                $stringout .= '<b><u>ERROR:</b>';
+                $e_level .= '<div class="error">ERROR</div>';
                 break;
             default :
-                $stringout .= '<span>';
 
         }
 
-        $stringout .= '[f ' . $function . '] [l ' . $line . ']&nbsp;&nbsp;' . $string . "\n" . '<br>';
-        $stringout .= '</span>' . "\n" . '<br>';
-
+        $stringout .= '<div>';
+        $stringout .= $e_level;
+        $stringout .= '<b><code> ' . $filename . ' | func ' . $function . ' | line ' . $line . '</code></b><br>' . "\n";
+        $stringout .= $string . '<br>' . "\n";
+        $stringout .= '</div>';
 
         // write to the debug log and close it
         $fh = fopen($this->LogPath . $this->LogFileName, 'a');
@@ -111,16 +144,15 @@ class PHPhiler_Debugger {
         $fh = @fopen($this->LogPath . $this->LogFileName, 'a');
 
         // write a HTML footer to the debug log and close it
-        $stringout = '<br></code></body></html>';
+        $stringout = '</body></html>';
         fwrite($fh, $stringout);
         fclose($fh);
 
         // write some JS to current document to open the debug log
         echo <<<END
-
-          <script type="text/javascript">
-          config ='toolbar=no, location=no, directories=no, status=no, menubar=no, width=800, resizable=yes, scrollbars=yes';
-          output = window.open ("
+        <script type="text/javascript">
+        config ='toolbar=no, location=no, directories=no, status=no, menubar=no, width=800, resizable=yes, scrollbars=yes';
+        output = window.open ("
 END;
         echo $LogURI . $this->LogFileName;
         echo '","outputwindow", config);</script>';

@@ -769,12 +769,12 @@ class PHPhiler {
   }
 
   function setSortOrder($column, $order) {
+      $this->_sortcolumn = $column;
+      $this->_sortorder = $order;
       $this->toDebugger(E_NOTICE, "Sort column: " . $this->_sortcolumn,
                         __FUNCTION__, __LINE__, __FILE__);
       $this->toDebugger(E_NOTICE, "Sort order: " . $this->_sortorder,
                         __FUNCTION__, __LINE__, __FILE__);
-      $this->_sortcolumn = $column;
-      $this->_sortorder = $order;
   }
 
   function setDateFormat($string) {
