@@ -4,13 +4,16 @@ Copyright (c) 2003-2004 Achton N. Netherclift
 ____________________________________________________________________________
 
 
-PHPhiler 0.3.1
+PHPhiler 0.4.0
 ==============
 Released (not yet)
 
 Feature:
+  - Debugger added (for development purposes)
 
 Change:
+  - setPHPhilerPath config option eliminated
+  - setDocRootURI config option added, which sets the URI to the document root
 
 Bugfix:
   - Fixed URL for indexed subdirs, which was generated wrong in some cases
