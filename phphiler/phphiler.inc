@@ -109,43 +109,60 @@ class PHPhiler {
     // include the configuration file
     if (isset($GLOBALS['PHPH_CONFIG_FILE'])) {
         $this->configfilename = $GLOBALS['PHPH_CONFIG_FILE'];
+    } else {
+        exit("<b style=\"color:red;\">ERROR:</b> \$GLOBALS['PHPH_CONFIG_FILE'] is not set.<br>");
     }
     require($this->configfilename);
 //echo "<br><b>CONSTRUCT:</b> Config file is '$this->configfilename'<br>";
-
-    // Include actions if they exist
-    if (file_exists($this->getPHPhilerPath() . 'phphiler.actions.inc')) {
-        include_once('phphiler.actions.inc');
-    }
 
     // set the global constants for version no. and project link
     define('PHPHILER_LINK', $this->__phphiler_link);
     define('PHPHILER_VER', $this->__phphiler_ver);
 
     $doc_root = $this->getDocRoot();
-    if (!$doc_root)
+    if (!$doc_root) {
       $doc_root = $_SERVER['DOCUMENT_ROOT'] . '/';
 //echo "<br><b>CONSTRUCT:</b> Doc root is '".$doc_root."'<br>";
+    }
+
+    if (!file_exists($this->getDocRoot() . $this->getPHPhilerPath() . 'phphiler.inc')) {
+        exit("<b style=\"color:red;\">ERROR:</b> Cannot find PHPhiler source. Please check config of setPHPhilerPath().<br>");
+    }
+
+    // Include actions if they exist
+    if (file_exists($this->getDocRoot() . $this->getPHPhilerPath() . 'phphiler.actions.inc')) {
+//echo "ACTION: at " . $this->getDocRoot() . $this->getPHPhilerPath() . 'phphiler.actions.inc' . "<br>";
+        require_once($this->getDocRoot() . $this->getPHPhilerPath() . 'phphiler.actions.inc');
+    }
 
     // pop the trailing slash off the end
     $doc_root_notrail = substr($doc_root, 0, strlen($doc_root)-1);
     // Set the current script filename and absolute working directory
-    $self_path_ar = explode('/', $doc_root_notrail.$_SERVER['SCRIPT_NAME']);
+    $self_path_ar = explode('/', $doc_root_notrail . $_SERVER['SCRIPT_NAME']);
 //print_r ($self_path_ar);
     $this->file_self = array_pop($self_path_ar);
 //echo "<br><b>CONSTRUCT:</b> Script name is '$this->file_self'<br>";
 
     // if startdir was given, set it as CWD
-    if ($startdir) {
+    if (isset($startdir)) {
         if ( !file_exists($startdir) || !is_dir($startdir) ) {
             exit("<br>ERROR: Given starting directory '$startdir' is not a valid directory.<br>");
+        }
+
+//echo "<br><b>CONSTRUCT:</b> Given startdir is '$startdir'<br>";
+
+        // if startdir begins with fwd slash, it's an absolute path
+        $is_rel_path = (substr($startdir,0,1) !== '/');
+        if ($is_rel_path) {
+            $startdir = implode('/', $self_path_ar) . '/' . $startdir;
+//echo "<br><b>CONSTRUCT:</b> Startdir is <b>relative</b>. It's now '$startdir'.<br>";
         }
       // set the supplied directory to current working dir and
       // resolve any symbolic links
       $this->cwd = realpath($startdir) . '/';
-//echo "<br><b>CONSTRUCT:</b> Given startdir/cwd is '$startdir'<br>";
-//echo "<br><b>CONSTRUCT:</b> Realpath is '".$this->cwd."'<br>";
-//echo "<br><b>CONSTRUCT:</b> CWD is '".getcwd()."'<br>";
+//echo "<br><b>CONSTRUCT:</b> Given startdir is '$startdir'<br>";
+//echo "<br><b>CONSTRUCT:</b> CWD (realpath) is '".$this->cwd."'<br>";
+//echo "<br><b>CONSTRUCT:</b> System CWD is '".getcwd()."'<br>";
       // get the relative dir that is derived from startdir and cwd
       //$reldir = substr(str_replace(getcwd(), '', strtolower($this->cwd)),0);
 //echo "<br><b>CONSTRUCT:</b> reldir is '".$reldir."'<br>";
@@ -327,8 +344,6 @@ class PHPhiler {
         }
       }
     }
-    // create a template file
-    if (isBitSetInArray($this->fileactions, 1)) $this->createTemplateFile();
 
     // end the execution time calculation and add it to the HTML object
     $mtime = microtime();
@@ -378,6 +393,7 @@ class PHPhiler {
 
           // get the actions for the current suffix
           $suf_actions = $this->getSuffixSettings($suf);
+
           // check if the suffix is valid
           if ($suf_actions == FALSE) continue;
           // then let's try to call each action in turn
@@ -402,7 +418,7 @@ class PHPhiler {
               exit ("<b style=\"color:red;\">ERROR</b>: file info retrieval (actions) failed for file '$file'!<br>");
           // if there is no title, use the dirname itself
           } elseif (!isset($fileinfo['title'])) {
-              $fileinfo['title'] = $file;
+              $fileinfo['title'] = stripSuffix($file);
           }
           // enter the title for the file into the array
           $this->files[$file] = $fileinfo['title'];
@@ -424,6 +440,10 @@ class PHPhiler {
           }
           $this->fileuris[$file] = $fileinfo['uri'];
 //echo "<b>UPDATE:</b> URI for file '$file' is " . $this->fileuris[$file] . "<br>";
+          // maybe create a template file (no need to do this for directories
+          if ($this->getAction($this->filepaths[$file], 1) == TRUE) {
+              $this->createTemplateFile();
+          }
         }
         // if it's a directory and we want to include them in the listings
         elseif (is_dir($file)) {
@@ -559,7 +579,7 @@ class PHPhiler {
 //echo "<b>TEMPLATE</b>: creating template file '$template_filename'<br>";
 
     // retrieve the full header path from the webserver and the config
-    $header_path = $this->getHTMLHeader();
+    $header_path = $this->getDocRoot() . $this->getHTMLHeader();
     // attempt to open the header file
     $fh = @fopen($header_path, 'r') or exit("<b style=\"color:red;\">ERROR:</b> createTemplateFile(): Unable to open header file at '$header_path'<br>");
     // read the header file into a string
@@ -574,22 +594,22 @@ class PHPhiler {
     $string .= "\n?>\n</pre>\n";
 
     // retrieve the full footer path from the webserver and the config
-    $footer_path = $this->getHTMLFooter();
+    $footer_path = $this->getDocRoot() . $this->getHTMLFooter();
       // attempt to open the footer file
-    $fh = @fopen($footer_path, 'r') or exit("<b style=\"color:red;\">ERROR:</b> createTemplateFile(): Unable to open footer file at '$footer_path'<br>");
+    $fh = fopen($footer_path, 'r') or exit("<b style=\"color:red;\">ERROR:</b> createTemplateFile(): Unable to open footer file at '$footer_path'<br>");
     // read the footer file into a string
     $string .= fread($fh, filesize($footer_path));
     // close the file again
-    @fclose($fh);
+    fclose($fh);
 
     // delete the old template file if it exists
     if (file_exists($template_filename)) unlink($template_filename);
     // attempt to create the new template file
     $fh = @fopen($template_filename, 'a') or exit ("<b style=\"color:red;\">ERROR:</b> createTemplateFile(): Unable to create template file at '$template_filename'. Write permission denied.<br>");
     // write the string to the template file
-    @fwrite($fh, $string);
+    fwrite($fh, $string);
     // close the template file
-    @fclose($fh);
+    fclose($fh);
   }
 
 
