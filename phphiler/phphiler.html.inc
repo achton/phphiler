@@ -29,28 +29,28 @@ Project homepage is found at      : http://phphiler.sourceforge.net
 // code for displaying the tables.
 class PHPhilerHTML {
 
-  var $__html                 = NULL; // the main class variable (string)
-  var $__exec_string          = NULL; // the execution time string (string)
-  var $__phphiler             = NULL; // reference to the PHPhiler object
+  var $_html                 = NULL; // the main class variable (string)
+  var $_exec_string          = NULL; // the execution time string (string)
+  var $_phphiler             = NULL; // reference to the PHPhiler object
 
   // Class constructor.
   function PHPhilerHTML(&$PHPhiler) {
 
     // keep a reference to the PHPhiler object in a class variable
-    $this->__phphiler = &$PHPhiler;
+    $this->_phphiler = &$PHPhiler;
 
     $this->addStringToHtml('<div class="phphiler'
-                          . $this->__phphiler->getCSSsuffix() . '">' . "\n"
+                          . $this->_phphiler->getCSSsuffix() . '">' . "\n"
                           . '<table class="phphiler-table'
-                          . $this->__phphiler->getCSSsuffix() .'" '
+                          . $this->_phphiler->getCSSsuffix() .'" '
                           . 'id="t' . $GLOBALS['PHPH_TABLE_ID'] . '">' . "\n");
 
-    if ($this->__phphiler->__include_table_header) {
+    if ($this->_phphiler->_include_table_header) {
       $string .= '<tr>' . "\n";
-      foreach ($this->__phphiler->getColumnHeaders() as $col => $colname) {
-        $header = $this->__phphiler->getColumnHeaders();
+      foreach ($this->_phphiler->getColumnHeaders() as $col => $colname) {
+        $header = $this->_phphiler->getColumnHeaders();
         $string .= '<td class="phphiler-header'
-                  . $this->__phphiler->getCSSsuffix() .'">' . "\n"
+                  . $this->_phphiler->getCSSsuffix() .'">' . "\n"
                   . htmlentities($header[$col])
                   .'</td>' . "\n";
       }
@@ -61,14 +61,14 @@ class PHPhilerHTML {
 
   // Function that returns the main HTML string class variable.
   function getHtml() {
-    $msg_ar = $this->__phphiler->getMoreLinkMessages();
-    $colspan = sizeof($this->__phphiler->getColumnHeaders());
+    $msg_ar = $this->_phphiler->getMoreLinkMessages();
+    $colspan = sizeof($this->_phphiler->getColumnHeaders());
 
-    $total_rows = $this->__phphiler->__total_entries; // total files/dirs
-    $cur_rows = $this->__phphiler->getCurEntries(); // number of rows shown right now
-    $max_rows = $this->__phphiler->getMaxEntries(); // rows to show at a a time
+    $total_rows = $this->_phphiler->_total_entries; // total files/dirs
+    $cur_rows = $this->_phphiler->getCurEntries(); // number of rows shown right now
+    $max_rows = $this->_phphiler->getMaxEntries(); // rows to show at a a time
     if ($max_rows > 0) {
-      $max_pages = $this->__phphiler->getMaxPageLinks(); // max page links to show
+      $max_pages = $this->_phphiler->getMaxPageLinks(); // max page links to show
       $total_pages = floor($total_rows / $max_rows) + ($total_rows % $max_rows != 0 ? 1 : 0);
       $last_row_num = $total_rows - ($total_rows % $max_rows);
       // only get the row number for the current table
@@ -137,10 +137,10 @@ class PHPhilerHTML {
                      . '#t' . $GLOBALS['PHPH_TABLE_ID'] . '" title="' . $msg_ar[5] . '">'
                      . '&raquo;</a>&nbsp;' : NULL);
 
-      if ($this->__phphiler->getIncludeNavigation()) {
+      if ($this->_phphiler->getIncludeNavigation()) {
         if ($cur_rows < $total_rows && $cur_rows <= $max_rows) {
           $this->addStringToHtml('<tr><td class="phphiler-navigation'
-                                . $this->__phphiler->getCSSsuffix() . '" '
+                                . $this->_phphiler->getCSSsuffix() . '" '
                                 . 'colspan="'.$colspan.'">' . "\n"
                                 . '<div style="float:left;">'
                                 . $show_all_html
@@ -155,7 +155,7 @@ class PHPhilerHTML {
                                 . '</td></tr>' . "\n");
         } elseif ($cur_rows == $total_rows && $max_rows == 0 && $_GET['m'] == 't') {
             $this->addStringToHtml('<tr><td class="phphiler-navigation'
-                                  . $this->__phphiler->getCSSsuffix() . '" '
+                                  . $this->_phphiler->getCSSsuffix() . '" '
                                   . 'colspan="'.$colspan.'">' . "\n"
                                   . '<a href="?id=' . $GLOBALS['PHPH_TABLE_ID']
                                   . '&m=f'
@@ -165,49 +165,49 @@ class PHPhilerHTML {
         }
       }
     }
-    if ($this->__phphiler->__include_table_footer) {
+    if ($this->_phphiler->_include_table_footer) {
       $this->addStringToHtml($this->getHtmlFooter());
     }
     $this->addStringToHtml('</table></div>' . "\n");
-    return $this->__html;
+    return $this->_html;
   }
 
   // Function that adds a directory and its info to the HTML table.
   function addDirToHtml($dir, $title) {
     // increase the class row counter so we know how many rows have been added
     // get the custom datestring
-    $datestr = $this->__phphiler->getDateFormat();
+    $datestr = $this->_phphiler->getDateFormat();
 
     $dirinfo = array (PHPH_TITLE => $title,
-                      PHPH_DESCR => $this->__phphiler->filedescr[$dir],
-                      PHPH_DATE  => date($datestr, $this->__phphiler->filedates[$dir]),
-                      PHPH_SIZE  => roundSize($this->__phphiler->filesizes[$dir]));
-    $action = $this->__phphiler->fileactions[$dir];
+                      PHPH_DESCR => $this->_phphiler->filedescr[$dir],
+                      PHPH_DATE  => date($datestr, $this->_phphiler->filedates[$dir]),
+                      PHPH_SIZE  => roundSize($this->_phphiler->filesizes[$dir]));
+    $action = $this->_phphiler->fileactions[$dir];
 
     $statusbartext = $this->getStatusbar($dir, $title);
 
-    $link_string = '/' . translate_string($this->__phphiler->fileuris[$dir],
+    $link_string = '/' . translate_string($this->_phphiler->fileuris[$dir],
                                     $GLOBALS['PHPH_PATH_FUNC'],
                                     $GLOBALS['PHPH_PATH_ARGS']);
 
     // set the string and add all the parameters to the HTML row
-    $string .= '<tr class="phphiler-dir-rows' . $this->__phphiler->getCSSsuffix() .'">';
+    $string .= '<tr class="phphiler-dir-rows' . $this->_phphiler->getCSSsuffix() .'">';
 
     // write out the columns in requested order
-    foreach ($this->__phphiler->getColumnHeaders() as $col => $colname) {
+    foreach ($this->_phphiler->getColumnHeaders() as $col => $colname) {
       switch ($col) {
          // title is a special case (ha ha)
         case PHPH_TITLE:
           $string .= '<td class="phphiler-'.PHPH_TITLE.'-cols'
-                    . $this->__phphiler->getCSSsuffix() . '">' . "\n"
+                    . $this->_phphiler->getCSSsuffix() . '">' . "\n"
                     . '<a href="' .$link_string.'" ' . $statusbartext.'>' . "\n"
-                    . htmlentities($dirinfo[PHPH_TITLE], ENT_COMPAT, $this->__phphiler->getCharset())
+                    . htmlentities($dirinfo[PHPH_TITLE], ENT_COMPAT, $this->_phphiler->getCharset())
                     . '</a></td>' . "\n";
           break;
         // the other columns all need the same HTML code
         default:
           $string .= '<td class="phphiler-'.strtolower($col).'-cols'
-                    . $this->__phphiler->getCSSsuffix() .'">' . "\n"
+                    . $this->_phphiler->getCSSsuffix() .'">' . "\n"
                     . $dirinfo[$col]
                     . '</td>' . "\n";
       }
@@ -220,7 +220,7 @@ class PHPhilerHTML {
   // Function that adds a divider row to the HTML table.
   function addDividerToHtml($colspan) {
     $string = '<tr><td colspan="' .$colspan .'" '
-            . 'class="phphiler-divider' . $this->__phphiler->getCSSsuffix() .'">' . "\n"
+            . 'class="phphiler-divider' . $this->_phphiler->getCSSsuffix() .'">' . "\n"
             . '</td></tr>' . "\n";
 
     // add the string to the main class variable
@@ -231,33 +231,33 @@ class PHPhilerHTML {
   // Function that adds a file and its info to the HTML table.
   function addFileToHtml($file, $title) {
     // get the custom datestring
-    $datestr = $this->__phphiler->getDateFormat();
+    $datestr = $this->_phphiler->getDateFormat();
 
     $fileinfo = array(PHPH_TITLE => $title,
-                      PHPH_DESCR => $this->__phphiler->filedescr[$file],
-                      PHPH_DATE => date($datestr, $this->__phphiler->filedates[$file]),
-                      PHPH_SIZE => roundSize($this->__phphiler->filesizes[$file]));
+                      PHPH_DESCR => $this->_phphiler->filedescr[$file],
+                      PHPH_DATE => date($datestr, $this->_phphiler->filedates[$file]),
+                      PHPH_SIZE => roundSize($this->_phphiler->filesizes[$file]));
 
     // define the string that may contain a 'target' entry for the link (depends on config)
     $target_string = '';
     // check the corresponding action bit of the file
-    if ($this->__phphiler->getAction($this->__phphiler->filepaths[$file], 2) == TRUE) {
+    if ($this->_phphiler->getAction($this->_phphiler->filepaths[$file], 2) == TRUE) {
       $target_string = 'target="_blank"';
     }
 
     // define the string that contains the link to the file
     $link_string = "";
     // check if the action bit for header/footer encapsulation is set
-    if ($this->__phphiler->getAction($this->__phphiler->filepaths[$file], 1) == TRUE) {
+    if ($this->_phphiler->getAction($this->_phphiler->filepaths[$file], 1) == TRUE) {
       // if it's set, use the template file
-      $link_string = $this->__phphiler->templatefilename.'?file='.($file);
+      $link_string = $this->_phphiler->templatefilename.'?file='.($file);
     // check if a uri for the file has been given
-    } elseif (!empty($this->__phphiler->fileuris[$file])) {
-      $link_string = $this->__phphiler->fileuris[$file];
+    } elseif (!empty($this->_phphiler->fileuris[$file])) {
+      $link_string = $this->_phphiler->fileuris[$file];
       //$link_string = '/' . $link_string;
     // else link directly to the file
     } else {
-      $link_string = translate_string($this->__phphiler->filepaths[$file],
+      $link_string = translate_string($this->_phphiler->filepaths[$file],
                                       $GLOBALS['PHPH_PATH_FUNC'],
                                       $GLOBALS['PHPH_PATH_ARGS']);
       $link_string = '/' . $link_string;
@@ -267,23 +267,23 @@ class PHPhilerHTML {
     $statusbartext = $this->getStatusbar($file, $fileinfo[PHPH_TITLE]);
 
     // set the main HTML string to add to the table
-    $string = '<tr class="phphiler-file-rows' . $this->__phphiler->getCSSsuffix() .'">';
+    $string = '<tr class="phphiler-file-rows' . $this->_phphiler->getCSSsuffix() .'">';
 
-    foreach ($this->__phphiler->getColumnHeaders() as $col => $colname) {
+    foreach ($this->_phphiler->getColumnHeaders() as $col => $colname) {
       switch ($col) {
          // title is a special case (ha ha)
         case PHPH_TITLE:
           // translate the title string
           $title = translate_string($fileinfo[PHPH_TITLE], $GLOBALS['PHPH_URI_FUNC'], $GLOBALS['PHPH_URI_ARGS']);
           $string .= '<td class="phphiler-'.PHPH_TITLE.'-cols'
-                    . $this->__phphiler->getCSSsuffix() .'">' . "\n"
+                    . $this->_phphiler->getCSSsuffix() .'">' . "\n"
                     . '<a href="' . $link_string.'" '.$target_string . $statusbartext.'>' . "\n"
                     . $title
                     . '</a></td>' . "\n";
            break;
          // the other columns all need the same code
          default :
-          $string .= '<td class="phphiler-' . strtolower($col) .'-cols' . $this->__phphiler->getCSSsuffix() .'">' . "\n"
+          $string .= '<td class="phphiler-' . strtolower($col) .'-cols' . $this->_phphiler->getCSSsuffix() .'">' . "\n"
                     . $fileinfo[$col]
                     . '</td>' . "\n";
       }
@@ -296,10 +296,10 @@ class PHPhilerHTML {
 
   // Function that returns the HTML footer to add to table listings.
   function getHtmlFooter() {
-    $string .= '<tr><td colspan="'. sizeof($this->__phphiler->getColumnHeaders()) .'" '
-              . 'class="phphiler-footer' . $this->__phphiler->getCSSsuffix() .'"> Indexed with '
+    $string .= '<tr><td colspan="'. sizeof($this->_phphiler->getColumnHeaders()) .'" '
+              . 'class="phphiler-footer' . $this->_phphiler->getCSSsuffix() .'"> Indexed with '
               . '<a href="' . PHPHILER_LINK . '">PHPHiL&#931;R</a> ' . "\n"
-              . PHPHILER_VER . ' &copy; 2003-2004. ' . $this->__exec_string
+              . PHPHILER_VER . ' &copy; 2003-2004. ' . $this->_exec_string
               . '</td></tr>' . "\n";
     return $string;
   }
@@ -308,7 +308,7 @@ class PHPhilerHTML {
   //
   function getStatusbar($file, $title) {
     $comment = NULL;
-    switch (strtolower($this->__phphiler->__statusbar_comment)) {
+    switch (strtolower($this->_phphiler->_statusbar_comment)) {
       case 'link' :
         // don't insert any javascript, just let the link be shown
         return NULL;
@@ -319,7 +319,7 @@ class PHPhilerHTML {
         $comment = $title;
         break;
       default :
-        $comment = $this->__statusbar_comment;
+        $comment = $this->_statusbar_comment;
     }
     $string = 'onMouseOver="window.defaultStatus=\' \'; window.status=\''
               .$comment.'\'; return true"';
@@ -328,12 +328,12 @@ class PHPhilerHTML {
 
   // Function that sets the execution time string class variable.
   function addExecTimeToHtml($time) {
-    $this->__exec_string = 'Indexing took '.$time.'s.';
+    $this->_exec_string = 'Indexing took '.$time.'s.';
   }
 
   // Function that appends a string to the main HTML string class variable.
   function addStringToHtml($string) {
-    $this->__html .= $string;
+    $this->_html .= $string;
   }
 
 } // end of class PHPhilerHTML
