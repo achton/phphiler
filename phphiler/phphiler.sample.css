@@ -1,0 +1,95 @@
+/*
+ * PHPhiler default Cascading Style Sheet
+ * PHPhiler is copyright (c) 2003-2004 Achton N. Netherclift
+ */
+
+/* the entire PHPhiler listing */
+.phphiler {
+  background            : silver;
+  border                : 1px solid black;
+}
+
+/* the html table */
+.phphiler-table {
+  width                 : 100%;
+  margin                : 0px;
+  padding               : 0px;
+}
+
+/* header row */
+.phphiler-header {
+  height                : 16px;
+  padding               : 4px;
+  text-align            : left;
+  vertical-align        : middle;
+  font-size             : 11px;
+  font-weight           : bold;
+  letter-spacing        : 2px;
+  color                 : white;
+  background            : #000080;
+}
+
+/* rows that list directories */
+.phphiler-dir-rows {
+  vertical-align        : top;
+  font-size             : 11px;
+  background            : gray;
+}
+
+/* rows that list files */
+.phphiler-file-rows {
+  vertical-align        : top;
+  font-size             : 11px;
+  background            : #B0B0B0;
+}
+
+/* columns that show the titles of files or directories */
+.phphiler-title-cols {
+  padding               : 4px;
+  text-align            : left;
+}
+
+/* columns that show file sizes */
+.phphiler-size-cols {
+  width                 : 15%;
+  padding               : 4px;
+  font-size             : 9px;
+  text-align            : right;
+}
+
+/* columns that show file dates */
+.phphiler-date-cols {
+  width                 : 20%;
+  padding               : 4px;
+  font-size             : 9px;
+  text-align            : right;
+}
+
+/* columns that descript files or directories */
+.phphiler-desc-cols {
+  padding               : 4px;
+  font-size             : 11px;
+  text-align            : left;
+}
+
+/* divider between directories and files */
+.phphiler-divider {
+  background            : navy;
+  height                : 1px;
+}
+
+/* rows with navigation stuff */
+.phphiler-navigation {
+  font-size             : 85%;
+  text-align            : right;
+  background            : #B0B0B0;
+}
+
+/* the footer at the bottom of each listing */
+.phphiler-footer {
+  font-size             : 9px;
+  padding               : 2px;
+  color                 : teal;
+  text-align            : right;
+  border                : 1px solid gray;
+}
