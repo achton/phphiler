@@ -113,7 +113,6 @@ class PHPhiler {
         exit("<b style=\"color:red;\">ERROR:</b> \$GLOBALS['PHPH_CONFIG_FILE'] is not set.<br>");
     }
     require($this->configfilename);
-//echo "<br><b>CONSTRUCT:</b> Config file is '$this->configfilename'<br>";
 
     // set the global constants for version no. and project link
     define('PHPHILER_LINK', $this->__phphiler_link);
@@ -122,7 +121,6 @@ class PHPhiler {
     $doc_root = $this->getDocRoot();
     if (!$doc_root) {
       $doc_root = $_SERVER['DOCUMENT_ROOT'] . '/';
-//echo "<br><b>CONSTRUCT:</b> Doc root is '".$doc_root."'<br>";
     }
 
     if (!file_exists($this->getDocRoot() . $this->getPHPhilerPath() . 'phphiler.inc')) {
@@ -141,9 +139,7 @@ class PHPhiler {
     $doc_root_notrail = substr($doc_root, 0, strlen($doc_root)-1);
     // Set the current script filename and absolute working directory
     $self_path_ar = explode('/', $doc_root_notrail . $_SERVER['SCRIPT_NAME']);
-//print_r ($self_path_ar);
     $this->file_self = array_pop($self_path_ar);
-//echo "<br><b>CONSTRUCT:</b> Script name is '$this->file_self'<br>";
 
     // if startdir was given, set it as CWD
     if (isset($startdir)) {
@@ -151,36 +147,26 @@ class PHPhiler {
             exit("<br>ERROR: Given starting directory '$startdir' is not a valid directory.<br>");
         }
 
-//echo "<br><b>CONSTRUCT:</b> Given startdir is '$startdir'<br>";
 
         // if startdir begins with fwd slash, it's an absolute path
         $is_rel_path = (substr($startdir,0,1) !== '/');
         if ($is_rel_path) {
             $startdir = implode('/', $self_path_ar) . '/' . $startdir;
-//echo "<br><b>CONSTRUCT:</b> Startdir is <b>relative</b>. It's now '$startdir'.<br>";
         }
       // set the supplied directory to current working dir and
       // resolve any symbolic links
       $this->cwd = realpath($startdir) . '/';
-//echo "<br><b>CONSTRUCT:</b> Given startdir is '$startdir'<br>";
-//echo "<br><b>CONSTRUCT:</b> CWD (realpath) is '".$this->cwd."'<br>";
-//echo "<br><b>CONSTRUCT:</b> System CWD is '".getcwd()."'<br>";
-      // get the relative dir that is derived from startdir and cwd
-      //$reldir = substr(str_replace(getcwd(), '', strtolower($this->cwd)),0);
-//echo "<br><b>CONSTRUCT:</b> reldir is '".$reldir."'<br>";
       // relative dir to the startdir is the top directory
       $this->cwrd = ''; // current working relative dir
     }
     else {
       $this->cwd = implode('/', $self_path_ar);
-//echo "<br><b>CONSTRUCT:</b> Cwd is '".$this->cwd."'<br>";
       // do some basic error checking
       if (!(file_exists($this->cwd) || is_dir($this->cwd) || is_link($this->cwd))) {
         exit("<b style=\"color:red;\">ERROR:</b> PHPhiler(): Unable to open directory '".$this->cwd."'<br>");
       }
       // resolve any symbolic links
       $this->cwd = realpath($this->cwd) . '/';
-//echo "<br><b>CONSTRUCT:</b> Realpath is '".$this->cwd."'<br>";
       // remove cwd from path to current script so we can get the relative dir
       $reldir = str_replace(strtolower(getcwd()), '', strtolower($this->cwd));
       // remove the first forward slash
@@ -188,21 +174,13 @@ class PHPhiler {
       // if it's the root dir, insert a './' instead of '/'
       $this->cwrd = ($reldir == '/' ? './' : $reldir); // current working relative dir
     }
-//echo '<br><b>CONSTRUCT:</b> self_path_ar is <pre>';
-//print_r($self_path_ar);
-//echo '</pre>';
-//echo "<b>CONSTRUCT:</b> file_self is '" . $this->file_self . "'<br>";
-//echo "<b>CONSTRUCT:</b> cwd is '" . $this->cwd . "'<br>";
-//echo "<b>CONSTRUCT:</b> getcwd() is '" . getcwd() . "'<br>";
-//echo "<b>CONSTRUCT:</b> cwrd is '" . $this->cwrd . "'<br>";
-//echo "<b>CONSTRUCT:</b> getcwd() is '" . getcwd() . "'<br>";
+
   }
 
 
   // Main function that prints the entire HTML output. It is to be called from
   // any document that wants the table index printed.
   function index() {
-//echo "<b>INDEX:</b> started ... <br>";
     // get the current working dir
     $org_cwd = $this->cwd;
 
@@ -211,7 +189,6 @@ class PHPhiler {
 
     // let's be good (ole') boys and change back to the dir we came from
     chdir($org_cwd);
-//echo "<b>INDEX:</b> Changed back to dir $org_cwd <br>";
 
     // check if the column we sort by is also shown or display an error
     if (!array_key_exists($this->__sortcolumn, $this->getColumnHeaders())) {
@@ -274,17 +251,14 @@ class PHPhiler {
         }
         break;
     }
-//echo "<b>INDEX:</b> Finished sorting the arrays. <br>";
 
     $this->__total_entries = 0;
 
     if ($this->getIncludeSubDirectories()) {
       $this->__total_entries += sizeof($this->dirs);
-//echo "DIRS: $this->__total_entries<br>";
     }
     if ($this->getIncludeFiles()) {
       $this->__total_entries += sizeof($this->files);
-//echo "FILES: ".sizeof($this->files)."<br>";
     }
 
     // set the table ID for the current listings
@@ -364,7 +338,6 @@ class PHPhiler {
   // Function to validate dirs and filenames for the current dir.
   // It enters all info into the arrays.
   function update($curdir, $depth) {
-//echo "<b>UPDATE:</b> current dir is '$curdir', depth is '$depth' <br>";
 
     $this->cwd = $curdir;
     // change to proper directory
@@ -377,7 +350,6 @@ class PHPhiler {
     $file = NULL;
     // open each file/dir in the directory and retrieve its info
     while (($file = readdir($dir_handle)) !== false) {
-//echo "<b>UPDATE:</b>: READING '$this->cwd' for file: <b>'$file'</b><br>";
       if ($file != '.' && $file != '..' // don't check dir aliases
          && !$this->isExcluded($file) ) // should it be excluded?
       {
@@ -388,7 +360,6 @@ class PHPhiler {
             && $file !== $this->file_self // is it the script itself?
             && $file !== $this->templatefilename ) // is it a template?
         {
-//echo "<b><u>FILE:</u></b> found file '$file' in dir '$this->cwd'<br>";
           $suf = $this->getSuffix($file);
           // check if we could get a suffix
           if ($suf == FALSE) continue;
@@ -400,18 +371,15 @@ class PHPhiler {
           if ($suf_actions == FALSE) continue;
           // then let's try to call each action in turn
           foreach ($suf_actions as $key => $action) {
-//echo "<b>ACTION:</b> calling action '$action' with file '$file' <br>";
             // if the function doesn't exist, try next action
             if (!function_exists($action)) continue;
             $fileinfo = call_user_func($action, $file);
             // if file info was retrieved then
             if ($fileinfo != FALSE) {
               // don't check the rest of the suffixes
-//echo "<b>ACTION:</b> breaking ... <br>";
               break;
             } else {
               // else go on to next action
-//echo "<b>ACTION:</b> continuing ... <br>";
               continue;
             }
           }
@@ -432,16 +400,12 @@ class PHPhiler {
           if (array_key_exists(PHPH_DATE, $this->getColumnHeaders())) {
             $this->filedates[$file] = readFileDate($file);
           }
-//echo "<b>UPDATE:</b> Current dir is '$this->cwd' ... <br>";
           $this->filepaths[$file] = $this->cwd . $file;
-//echo "<b>UPDATE:</b> Abspath for file '$file' is '".$this->filepaths[$file]."' ... <br>";
           if ($fileinfo['uri'] == NULL) {
-//echo "<b>UPDATE:</b> URI for file doesn't exist! <br>";
 
             $fileinfo['uri'] = str_replace ($this->getDocRoot(), '', $this->filepaths[$file]);
           }
           $this->fileuris[$file] = $fileinfo['uri'];
-//echo "<b>UPDATE:</b> URI for file '$file' is " . $this->fileuris[$file] . "<br>";
           // maybe create a template file (no need to do this for directories
           if ($this->getAction($this->filepaths[$file], 1) == TRUE) {
               $this->createTemplateFile();
@@ -451,7 +415,6 @@ class PHPhiler {
         elseif (is_dir($file)) {
           // ref to file for logical reasons
           $dir = &$file;
-//echo "<b><u>DIR:</u></b> found dir <b>'$dir'</b> in dir '$curdir' <br>";
           // only enter dirinfo if directories are to be shown
           if ($this->getIncludeSubDirectories() === TRUE) {
             // get the actions for the current suffix
@@ -461,7 +424,6 @@ class PHPhiler {
             if ($suf_actions == FALSE) continue;
             // then let's try to call each action in turn
             foreach ($suf_actions as $action) {
-//echo "<b>ACTION:</b> calling action '$action' with dir '$dir' <br>";
               // if the function doesn't exist, try next action
               if (!function_exists($action)) continue;
               $fileinfo = call_user_func($action, $dir);
@@ -492,22 +454,16 @@ class PHPhiler {
             if (array_key_exists(PHPH_DATE, $this->getColumnHeaders())) {
               $this->filedates[$dir] = readFileDate($dir);
             }
-//echo "<b>UPDATE:</b> Current dir is '$this->cwd' ... <br>";
           $this->filepaths[$dir] = $this->cwd . $dir;
-//echo "<b>UPDATE:</b> Abspath for dir '$dir' is '".$this->filepaths[$dir]."' ... <br>";
           if ($fileinfo['uri'] == NULL) {
-//echo "<b>UPDATE:</b> URI for dir doesn't exist! <br>";
 
             $fileinfo['uri'] = str_replace ($this->getDocRoot(), '', $this->filepaths[$dir]);
           }
             $this->fileuris[$dir] = $fileinfo['uri'];
-//echo "<b>UPDATE:</b> URI for dir '$dir' is " . $this->fileuris[$dir] . "<br>";
           }
 
           // dir path must always be entered
           $this->filepaths[$dir] = $this->cwd . $this->cwrd . $dir . '/';
-//echo "<b>UPDATE:</b> Abspath for dir '$dir' is " . $this->filepaths[$dir] . "<br>";
-//echo "<b>UPDATE:</b> Current depth is $depth <br>";
           // if we've the depth we wanted, or it's become negative
           // (in which case we started with 0 depth = infinite)
           if ($depth-1 > 0 || $depth-1 < 0) {
@@ -527,9 +483,8 @@ class PHPhiler {
           chdir($curdir);
         }
       }
-//echo "<b>UPDATE:</b> going on 2 ... <br>";
     }
-    // FIXME: closing dir apparently not possible.
+    // closing dir apparently not possible.
     //@closedir($dir_handle) or exit('ERROR: createFileList(): Unable to close directory '.$this->cwd);
 
   }
@@ -537,7 +492,6 @@ class PHPhiler {
 
   // Function that reads the size of a file or directory and formats the string
   function readFileSize($file) {
-//echo "<b>FILESIZE:</b> Reading file size for file '$file' in dir '".getcwd()."'<br>";
     if (is_file($file)) {
       // get the size of the file
       return filesize($file);
@@ -551,7 +505,6 @@ class PHPhiler {
   // Originally written by dmitri926 AT yahoo DOT com (snatched from php.net).
   // Modified for use with PHPhiler.
   function readDirSize($dir) {
-//echo "<b>DIRSIZE:</b> Reading dir size for dir '$dir'<br>";
     $totalsize = 0;
     if ($dirstream = opendir($dir)) {
       while (false !== ($filename = readdir($dirstream))) {
@@ -577,8 +530,6 @@ class PHPhiler {
   function createTemplateFile() {
     // define the path where we're going to put the template file
     $template_filename = $this->cwd.'/'.$this->templatefilename;
-
-//echo "<b>TEMPLATE</b>: creating template file '$template_filename'<br>";
 
     // retrieve the full header path from the webserver and the config
     $header_path = $this->getDocRoot() . $this->getHTMLHeader();
@@ -617,7 +568,6 @@ class PHPhiler {
 
 
   function getAction($file, $bitno) {
-//echo "<b>ACTION:</b> getAction: Getting bit no. '$bitno' for file '$file'<br>";
     $suf = $this->getSuffix($file);
     foreach ($this->getSuffixSettings() as $suf_act_ar) {
       if (strcasecmp($suf,$suf_act_ar[0]) == 0) {
@@ -631,7 +581,6 @@ class PHPhiler {
   // Function to return the suffix only
   function getSuffix($file) {
     //$file = translate_string($file, $GLOBALS['PHPH_PATH_FUNC'], $GLOBALS['PHPH_PATH_ARGS']);
-//echo "<b>SUFFIX:</b> getSuffix: Getting suffix for file '$file' <br>";
     if (is_file($file)) {
       $pathinfo = pathinfo($file);
       if ($pathinfo['extension'] !== '') {
@@ -681,27 +630,20 @@ class PHPhiler {
   }
 
   function isValidSuffix ($suf) {
-//echo "<b>VALIDSUF:</b> Checking for valid suffix '$suf'<br>";
     return array_search($suf, $GLOBALS['PHPH_SUFFIXES']);
   }
 
   function isExcluded($file) {
-//echo "<b>IS_EXCL:</b> checking file '$file'<br>";
     if (in_array ($file,$this->getExcludedElements()))
       return TRUE;
 
     foreach ($this->getWildcardElements() as $wildcard) {
-  //echo "<b>IS_EXCL:</b> checking wildcard '$wildcard'<br>";
       $split = strpos($wildcard, '*');
       $prefixToSearch = quotemeta (substr($wildcard, 0, $split));
       $suffixToSearch = quotemeta (substr($wildcard, $split+1, strlen($wildcard)));
-  // echo "REGEXP_PREF: $prefixToSearch<br>";
-  // echo "REGEXP_SUFF: $suffixToSearch<br>";
 
       $regexp = $prefixToSearch . "[\d\s\w]*" . $suffixToSearch;
-  // echo "REGEXP: $regexp<br>";
       if (eregi($regexp, $file)) {
-  // echo "REGEXP: <b>TRUE!</b><br>";
         return TRUE;
       }
     }
@@ -840,10 +782,7 @@ class PHPhiler {
   function setExcludedElements($excl_ar) {
     foreach ($excl_ar as $excl) {
       if (stristr($excl, '*') == TRUE) {
-        //$string = substr($excl, 0, strlen($excl)-1);
         $wc_ar[] = $excl;
-//echo "excl: " . $excl . "<br>";
-//echo "str : " . $string . "<br>";
       } else {
         $ex_ar[] = $excl;
       }

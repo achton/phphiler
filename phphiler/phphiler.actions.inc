@@ -64,9 +64,6 @@ function PHPH_NFOfile ($file) {
       $endtag = '</'.$key.'>';
       // remove the begin tag from the string
       $strpos = strpos($string, $tag);
-//echo "<pre>";
-//echo "strpos: $strpos <br>";
-//echo "</pre>";
       // if there was no begin tag this time, go back and try the next tag
       if ($strpos === FALSE) continue;
       $string = substr($string, $strpos+strlen($tag));
@@ -77,28 +74,25 @@ function PHPH_NFOfile ($file) {
       $fileinfo[$key] = substr($string, 0, $strpos);
     }
   }
-//echo "<pre>";
-//print_r($fileinfo);
-//echo "</pre>";
   return $fileinfo;
 }
 
-// særlig funktion, der anvendes af PHPHiler på alle biblioteker i navigations-menuen
-// (se header.inc) - den kopierer den globale index fil ned i biblioteket, hvis den ikke
-// findes der i forvejen
+// Special action that can check for the presence of a special file in all
+// subdirectories of a file list and copy the file there if it is not present.
 function IndexCopy ($dir) {
-  // giv adgang til et par variable fra globals.inc
+  // give access to some custom global variables
   global $MAIN_INDEX_FILE;
   global $MAIN_INDEX_PATH;
-  // opbyg den fulde sti til den fil vi ønsker at tjekke for
+  // build the full target path for copying the file
   $target_path = getcwd() . '/' . $dir . '/' . $MAIN_INDEX_FILE;
-  // hvis filen ikke eksisterer, kopierer vi den ned i biblioteket
+  // if the file does not exist, we'll copy it into the target directory
   if (!file_exists($target_path)) {
     copy ($MAIN_INDEX_PATH . $MAIN_INDEX_FILE, $target_path);
   }
-  //echo $target_path . "<br>";
 
-  // lad PHPhiler defaulte til standard titel funktionen (PHPH_filename), se PHPhiler docs
+  // let PHPhiler default to the standard file retrieval function by returning
+  // false, as if this function failed (although it probably did what it was
+  // supposed to)
   return FALSE;
 }
 

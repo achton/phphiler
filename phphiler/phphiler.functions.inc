@@ -33,7 +33,6 @@ Project homepage is found at      : http://phphiler.sourceforge.net
   // returns an array containing the title.
   function PHPH_filename ($file) {
     $string = stripSuffix($file);
-//echo "<b>PHPH_filename:</b> stripped file '$file' to '$string'<br>";
     $fileinfo = array('title' => $string);
     return $fileinfo;
   }
@@ -62,7 +61,6 @@ Project homepage is found at      : http://phphiler.sourceforge.net
 
   // Function that reads the modify date of a file "l, F jS, Y"
   function readFileDate($filename) {
-//echo "<b>FDATE:</b> reading date for '$filename'<br>";
     $filedate = filemtime($filename);
     return $filedate;
   }

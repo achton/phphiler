@@ -35,7 +35,6 @@ class PHPhilerHTML {
 
   // Class constructor.
   function PHPhilerHTML(&$PHPhiler) {
-//echo "<b>HTML</b>: instantiating HTML<br>";
 
     // keep a reference to the PHPhiler object in a class variable
     $this->__phphiler = &$PHPhiler;
@@ -92,13 +91,9 @@ class PHPhilerHTML {
         // and end at the wanted maximum (ie. currentpage+maxpages)
         $end = $cur_page+$max_pages-1;
       }
-  //echo "start: $start <br>";
-  //echo "end: $end <br>";
 
       for ($page=$start; $page <= $end; $page++) {
         $row_num = $page * $max_rows;
-  //echo "row_num: $row_num <br>";
-  //echo "page: $page <br>";
         if ($page == ($cur_page)) {
           $prev_row_num = ($page-1) * $max_rows;
           $next_row_num = ($page+1) * $max_rows;
@@ -119,21 +114,6 @@ class PHPhilerHTML {
           $last_row_num = $total_rows-$max_pages;
       }
 
-  //echo "<br>";
-  //echo "total_rows: ". $total_rows ."<br>";
-  //echo "cur_rows: ". $cur_rows ."<br>";
-  //echo "max_rows: ". $max_rows ."<br>";
-  //echo "<br>";
-  //echo "prev_row_num: " . $prev_row_num . "<br>";
-  //echo "cur_row_num: " . $cur_row_num . "<br>";
-  //echo "next_row_num: " . $next_row_num . "<br>";
-  //echo "last_row_num: " . $last_row_num . "<br>";
-  //echo "<br>";
-  //echo "total_pages: " . $total_pages . "<br>";
-  //echo "cur_page: " . $cur_page . "<br>";
-  //echo "max_pages: " . $max_pages . "<br>";
-
-
       $show_all_html = '<a href="?id=' . $GLOBALS['PHPH_TABLE_ID']
                     . '&m=t'
                      . '#t' . $GLOBALS['PHPH_TABLE_ID'] . '">'
@@ -143,7 +123,6 @@ class PHPhilerHTML {
                      . '&m=f&f=0'
                      . '#t' . $GLOBALS['PHPH_TABLE_ID'] . '" title="' . $msg_ar[4] . '">'
                      . '&laquo;</a>&nbsp;' : NULL);
-      //'<a href="#" title="Go to first page">&laquo;</a>&nbsp;';
       $back_one_html = ($prev_row_num >= 0 ? '<a href="?id=' . $GLOBALS['PHPH_TABLE_ID']
                      . '&m=f&f=' . $prev_row_num
                      . '#t' . $GLOBALS['PHPH_TABLE_ID'] . '" title="' . $msg_ar[3] . ' '.($prev_row_num / $max_rows + 1).'">'
@@ -175,7 +154,6 @@ class PHPhilerHTML {
                                 . $fwd_to_last_html
                                 . '</div>'
                                 . '</td></tr>' . "\n");
-          //$GLOBALS['max_temp'] = TRUE;
         } elseif ($cur_rows == $total_rows && $max_rows == 0 && $_GET['m'] == 't') {
             $this->addStringToHtml('<tr><td class="phphiler-navigation'
                                   . $this->__phphiler->getCSSsuffix() . '" '
@@ -192,13 +170,11 @@ class PHPhilerHTML {
       $this->addStringToHtml($this->getHtmlFooter());
     }
     $this->addStringToHtml('</table></div>' . "\n");
-//echo "<b>HTML</b>: returning HTML<br>";
     return $this->__html;
   }
 
   // Function that adds a directory and its info to the HTML table.
   function addDirToHtml($dir, $title) {
-//echo "<b>HTML</b>: adding dir '$dir'<br>";
     // increase the class row counter so we know how many rows have been added
     // get the custom datestring
     $datestr = $this->__phphiler->getDateFormat();
@@ -211,14 +187,9 @@ class PHPhilerHTML {
 
     $statusbartext = $this->getStatusbar($dir, $title);
 
-//echo "<b>HTML</b>: URI for dir '$dir' is '".$this->__phphiler->fileuris[$dir]."' <br>";
-
-    //
     $link_string = '/' . translate_string($this->__phphiler->fileuris[$dir],
                                     $GLOBALS['PHPH_PATH_FUNC'],
                                     $GLOBALS['PHPH_PATH_ARGS']);
-
-//echo "<b>HTML</b>: Link for dir '$dir' is '".$link_string."' <br>";
 
     // set the string and add all the parameters to the HTML row
     $string .= '<tr class="phphiler-dir-rows' . $this->__phphiler->getCSSsuffix() .'">';
@@ -260,9 +231,6 @@ class PHPhilerHTML {
 
   // Function that adds a file and its info to the HTML table.
   function addFileToHtml($file, $title) {
-//echo "<b>HTML</b>: adding file '$file with title '$title'<br>";
-    // increase the class row counter so we know how many rows have been added
-    //$this->__cur_rows++;
     // get the custom datestring
     $datestr = $this->__phphiler->getDateFormat();
 
@@ -270,9 +238,6 @@ class PHPhilerHTML {
                       PHPH_DESCR => $this->__phphiler->filedescr[$file],
                       PHPH_DATE => date($datestr, $this->__phphiler->filedates[$file]),
                       PHPH_SIZE => roundSize($this->__phphiler->filesizes[$file]));
-
-    // now get the real path for the file
-    //$file = $this->__phphiler->filepaths[$file];
 
     // define the string that may contain a 'target' entry for the link (depends on config)
     $target_string = '';
@@ -298,7 +263,6 @@ class PHPhilerHTML {
                                       $GLOBALS['PHPH_PATH_ARGS']);
       $link_string = '/' . $link_string;
     }
-//echo "<b>HTML</b>: URI for file '$file' is '".$this->__phphiler->fileuris[$file]."' <br>";
 
     // set the contents of the statusbar when the link is hovered
     $statusbartext = $this->getStatusbar($file, $fileinfo[PHPH_TITLE]);
@@ -307,7 +271,6 @@ class PHPhilerHTML {
     $string = '<tr class="phphiler-file-rows' . $this->__phphiler->getCSSsuffix() .'">';
 
     foreach ($this->__phphiler->getColumnHeaders() as $col => $colname) {
-//echo "<b>HTML</b>: Going for column $col <br>";
       switch ($col) {
          // title is a special case (ha ha)
         case PHPH_TITLE:

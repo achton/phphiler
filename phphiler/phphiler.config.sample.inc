@@ -67,7 +67,7 @@ $this->setIncludeTableHeader(true);
 $this->setIncludeTableFooter(true);
 
 // Set the column to sort the file lists by, and the sort order.
-$this->setSortOrder(PHPH_SIZE, PHPH_DESC);
+$this->setSortOrder(PHPH_TITLE, PHPH_ASC);
 
 // Set whether to display a navigation menu at the bottom of file lists. It
 // is only displayed if there are more elements than set in MaxEntries().
@@ -81,8 +81,9 @@ $this->setMaxPageLinks(3);
 $this->setCSSsuffix('');
 
 // Set which charset to interpret the file- and directorynames with.
+// Defaults to ISO-8859-1.
 // Available charsets are listed at http://php.net/htmlentities/.
-$this->setCharset('ISO-8859-1');
+//$this->setCharset('ISO-8859-1');
 
 // ________________________________________________________________________
 //
@@ -105,11 +106,11 @@ $this->setCharset('ISO-8859-1');
 // The name of actions to perform for this file type can be entered last
 // in the array. If no action is given, the default PHP_filename action is
 // used.
-$this->setSuffixSettings( array( PHPH_DIR, FALSE, FALSE ),
-                          array( 'txt', TRUE, FALSE ),
-                          array( 'html', FALSE, TRUE, 'PHPH_NFOfile' ),
+$this->setSuffixSettings( array(PHPH_DIR, FALSE, FALSE, 'PHPH_NFOfile'),
+                          array('txt', TRUE, FALSE, ),
+                          array('html', FALSE, TRUE, 'PHPH_NFOfile'),
                           array('gif', FALSE, FALSE),
-                          array( 'mp3', FALSE, TRUE, 'MyAction', 'PHPH_NFOfile' ),
+                          array('mp3', FALSE, TRUE, 'MyAction', 'PHPH_NFOfile' ),
                          );
 
 // This setting determines which function will translate filenames into
