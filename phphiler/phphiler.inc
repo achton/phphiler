@@ -107,13 +107,16 @@ class PHPhiler {
     unset($GLOBALS['PHPH_CSS_SUFFIX']);
 
     // include the configuration file
-    if (isset($GLOBALS['PHPH_CONFIG_FILE']))
-      $this->configfilename = $GLOBALS['PHPH_CONFIG_FILE'];
+    if (isset($GLOBALS['PHPH_CONFIG_FILE'])) {
+        $this->configfilename = $GLOBALS['PHPH_CONFIG_FILE'];
+    }
     require($this->configfilename);
 //echo "<br><b>CONSTRUCT:</b> Config file is '$this->configfilename'<br>";
 
-    if (file_exists($this->getPHPhilerPath() . 'phphiler.actions.inc'))
-      include_once('phphiler.actions.inc');
+    // Include actions if they exist
+    if (file_exists($this->getPHPhilerPath() . 'phphiler.actions.inc')) {
+        include_once('phphiler.actions.inc');
+    }
 
     // set the global constants for version no. and project link
     define('PHPHILER_LINK', $this->__phphiler_link);
@@ -190,6 +193,14 @@ class PHPhiler {
     // let's be good (ole') boys and change back to the dir we came from
     chdir($org_cwd);
 //echo "<b>INDEX:</b> Changed back to dir $org_cwd <br>";
+
+    // check if the column we sort by is also shown or display an error
+    if (!array_key_exists($this->__sortcolumn, $this->getColumnHeaders())) {
+        exit ("<b>CONFIG ERROR:</b> The column to sort by is not included in the column headers.<br>");
+    }
+
+
+
     $sortitem = NULL;
     // sort the arrays
     switch ($this->__sortorder) {
@@ -261,11 +272,13 @@ class PHPhiler {
     $GLOBALS['PHPH_TABLE_ID']++;
 
     // if we want it all shown, set maxEntries to 0
-    if ($_GET['m'] == 't' && $_GET['id'] == $GLOBALS['PHPH_TABLE_ID'])
+    if ($_GET['m'] == 't' && $_GET['id'] == $GLOBALS['PHPH_TABLE_ID']) {
       $this->setMaxEntries(0);
+    }
     // otherwise, slice a bit off the array and show only that
-    elseif(isset($_GET['f']) && $_GET['id'] == $GLOBALS['PHPH_TABLE_ID'])
+    elseif(isset($_GET['f']) && $_GET['id'] == $GLOBALS['PHPH_TABLE_ID']) {
       $sortitem = array_slice($sortitem, $_GET['f'], $this->getMaxEntries());
+    }
 
     $this->setCurEntries(0);
 
@@ -751,10 +764,10 @@ class PHPhiler {
 
   function setColumnHeaders($col_ar) {
     if (!is_array($col_ar)) exit("<b style=\"color:red;\">ERROR:</b> Config: '$col_ar' is not an array.<br>");
-    $this->__col_headers = $col_ar;
+    $GLOBALS['PHPH_COL_HEADERS'] = $col_ar;
   }
   function getColumnHeaders() {
-    return $this->__col_headers;
+    return $GLOBALS['PHPH_COL_HEADERS'];
   }
 
   // dirs on top? (bool)
