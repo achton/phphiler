@@ -43,48 +43,48 @@ require_once('phphiler.debugger.inc');
  */
 class PHPhiler {
 
-  // private variables
-  var $_phphiler_ver        = '0.4.0cvs'; // version number
-  var $_phphiler_link       = 'http://phphiler.sf.net'; // link address
+    // private variables
+    var $_phphiler_ver        = '0.4.0cvs'; // version number
+    var $_phphiler_link       = 'http://phphiler.sf.net'; // link address
 
-  var $_statusbar_comment   = NULL;     // what to display in the status bar (string/keyword)
+    var $_statusbar_comment   = NULL;     // what to display in the status bar (string/keyword)
 
-  var $_sortcolumn          = NULL;     // the column to sort by (string/keyword)
-  var $_sortorder           = NULL;     // the order to sort by (asc/desc) (string/keyword)
+    var $_sortcolumn          = NULL;     // the column to sort by (string/keyword)
+    var $_sortorder           = NULL;     // the order to sort by (asc/desc) (string/keyword)
 
-  var $_include_sub_dirs    = NULL;     // whether to include directories (bool)
-  var $_include_files       = NULL;     // whether to include files (bool)
-  var $_include_table_header = NULL;    // whether to include the table header columns (bool)
-  var $_include_table_footer = NULL;    // whether to include the table footer (bool)
+    var $_include_sub_dirs    = NULL;     // whether to include directories (bool)
+    var $_include_files       = NULL;     // whether to include files (bool)
+    var $_include_table_header = NULL;    // whether to include the table header columns (bool)
+    var $_include_table_footer = NULL;    // whether to include the table footer (bool)
 
-  var $_header_path         = NULL;     // path to header file (string)
-  var $_footer_path         = NULL;     // path to footer file (string)
+    var $_header_path         = NULL;     // path to header file (string)
+    var $_footer_path         = NULL;     // path to footer file (string)
 
-  var $_total_entries       = NULL;     // number of files in this listing ($int)
+    var $_total_entries       = NULL;     // number of files in this listing ($int)
 
   var $_debug_mode          = false;     // debug mode on/off (bool)
   var $Debugger             = NULL;     // reference to the debugger instance
 
-  var $files                = array();  // actual filenames and doctitles ('file' => 'title')
-  var $dirs                 = array();  // dirs and corresponding titles ('dir' => 'title')
-  var $filepaths            = array();  // relative paths to files ('file/dir' => 'path')
-  var $filedescr            = array();  // descriptions ('file/dir' => 'descr')
-  var $filedates            = array();  // date ('file/dir' => 'date')
-  var $filesizes            = array();  // size ('file/dir' => 'size)
-  var $fileactions          = array();  // actions ('file' => 'action_bits')
-  var $fileuris             = array();  // uris ('file' => 'uri')
+    var $files                = array();  // actual filenames and doctitles ('file' => 'title')
+    var $dirs                 = array();  // dirs and corresponding titles ('dir' => 'title')
+    var $filepaths            = array();  // relative paths to files ('file/dir' => 'path')
+    var $filedescr            = array();  // descriptions ('file/dir' => 'descr')
+    var $filedates            = array();  // date ('file/dir' => 'date')
+    var $filesizes            = array();  // size ('file/dir' => 'size)
+    var $fileactions          = array();  // actions ('file' => 'action_bits')
+    var $fileuris             = array();  // uris ('file' => 'uri')
 
-  var $file_self            = NULL;     // filename of the working document
-  var $cwd                  = NULL;     // current working directory
-  var $cwrd                 = NULL;     // current relative working directory
+    var $file_self            = NULL;     // filename of the working document
+    var $cwd                  = NULL;     // current working directory
+    var $cwrd                 = NULL;     // current relative working directory
 
-  var $configfilename       = 'phphiler.config.inc';    // filename of the configuration file
-  var $templatefilename     = 'phphiler.template.php';  // filename of template
+    var $configfilename       = 'phphiler.config.inc';    // filename of the configuration file
+    var $templatefilename     = 'phphiler.template.php';  // filename of template
 
-  var $starttime            = NULL;     // start time for the execution time measurement
+    var $starttime            = NULL;     // start time for the execution time measurement
 
-  // This is the class constructor. It sets the various static variables and constants.
-  function PHPhiler($startdir = NULL) {
+    // This is the class constructor. It sets the various static variables and constants.
+    function PHPhiler($startdir = NULL) {
 
     // first initialize the time counter
     $mtime = microtime();
@@ -193,6 +193,9 @@ class PHPhiler {
             exit("<b style=\"color:red;\">ERROR:</b> PHPhiler(): Unable to read from supplied directory '".$startdir."'<br>");
         }
 
+            $this->toDebugger(E_NOTICE, "Startdir is set by user to " . $startdir,
+                              __FUNCTION__, __LINE__, __FILE__);
+
         // if startdir does NOT begin with fwd slash, it's a relative path
         if (substr($startdir, 0, 1) !== '/'
                 // except on Netware, relative paths DON'T begin with SYS: or VOLn:
@@ -247,7 +250,7 @@ class PHPhiler {
                               __FUNCTION__, __LINE__, __FILE__);
     }
 
-  }
+    }
 
 
   // Main function that prints the entire HTML output. It is to be called from
@@ -273,315 +276,323 @@ class PHPhiler {
     }
 
 
-    $sortitem = NULL;
-    // sort the arrays
-    switch ($this->_sortorder) {
-      case PHPH_ASC :
-        switch ($this->_sortcolumn) {
-          case PHPH_TITLE :
-            if ($this->getDirectoriesOnTop()) {
-              uasort($this->dirs, "strcasecmp");
-              uasort($this->files, "strcasecmp");
-              $sortitem = $this->dirs + $this->files;
-            } else {
-              $sortitem = $this->dirs + $this->files;
-              uasort($sortitem, "strcasecmp");
+        $sortitem = NULL;
+        // sort the arrays
+        switch ($this->_sortorder) {
+          case PHPH_ASC :
+            switch ($this->_sortcolumn) {
+              case PHPH_TITLE :
+                if ($this->getDirectoriesOnTop()) {
+                  uasort($this->dirs, "strcasecmp");
+                  uasort($this->files, "strcasecmp");
+                  $sortitem = $this->dirs + $this->files;
+                } else {
+                  $sortitem = $this->dirs + $this->files;
+                  uasort($sortitem, "strcasecmp");
+                }
+                break;
+              case PHPH_SIZE :
+                asort($this->filesizes, SORT_NUMERIC);
+                $sortitem =& $this->filesizes;
+                break;
+              case PHPH_DATE :
+                asort($this->filedates, SORT_NUMERIC);
+                $sortitem =& $this->filedates;
+                break;
+              case PHPH_DESCR :
+                uasort($this->filedescr, "strcasecmp");
+                $sortitem =& $this->filedescr;
+                break;
             }
             break;
-          case PHPH_SIZE :
-            asort($this->filesizes, SORT_NUMERIC);
-            $sortitem =& $this->filesizes;
-            break;
-          case PHPH_DATE :
-            asort($this->filedates, SORT_NUMERIC);
-            $sortitem =& $this->filedates;
-            break;
-          case PHPH_DESCR :
-            uasort($this->filedescr, "strcasecmp");
-            $sortitem =& $this->filedescr;
-            break;
-        }
-        break;
-      case PHPH_DESC :
-        switch ($this->_sortcolumn) {
-          case PHPH_TITLE :
-            uasort($this->dirs, "strcasecmp");
-            $this->dirs = array_reverse($this->dirs);
-            uasort($this->files, "strcasecmp");
-            $this->files = array_reverse($this->files);
-            $sortitem = $this->dirs + $this->files;
-            break;
-          case PHPH_SIZE :
-            arsort($this->filesizes, SORT_NUMERIC);
-            $sortitem =& $this->filesizes;
-            break;
-          case PHPH_DATE :
-            arsort($this->filedates, SORT_NUMERIC);
-            $sortitem =& $this->filedates;
-            break;
-          case PHPH_DESCR :
-            uasort($this->filedescr, "strcasecmp");
-            $this->filedescr = array_reverse($this->filedescr);
-            $sortitem =& $this->filedescr;
+          case PHPH_DESC :
+            switch ($this->_sortcolumn) {
+              case PHPH_TITLE :
+                uasort($this->dirs, "strcasecmp");
+                $this->dirs = array_reverse($this->dirs);
+                uasort($this->files, "strcasecmp");
+                $this->files = array_reverse($this->files);
+                $sortitem = $this->dirs + $this->files;
+                break;
+              case PHPH_SIZE :
+                arsort($this->filesizes, SORT_NUMERIC);
+                $sortitem =& $this->filesizes;
+                break;
+              case PHPH_DATE :
+                arsort($this->filedates, SORT_NUMERIC);
+                $sortitem =& $this->filedates;
+                break;
+              case PHPH_DESCR :
+                uasort($this->filedescr, "strcasecmp");
+                $this->filedescr = array_reverse($this->filedescr);
+                $sortitem =& $this->filedescr;
+                break;
+            }
             break;
         }
-        break;
-    }
 
-    $this->_total_entries = 0;
+        $this->_total_entries = 0;
 
-    if ($this->getIncludeSubDirectories()) {
-      $this->_total_entries += sizeof($this->dirs);
-    }
-    if ($this->getIncludeFiles()) {
-      $this->_total_entries += sizeof($this->files);
-    }
-
-    // set the table ID for the current listings
-    $GLOBALS['PHPH_TABLE_ID']++;
-
-    // if we want it all shown, set maxEntries to 0
-    if ($_GET['m'] == 't' && $_GET['id'] == $GLOBALS['PHPH_TABLE_ID']) {
-      $this->setMaxEntries(0);
-    }
-    // otherwise, slice a bit off the array and show only that
-    elseif(isset($_GET['f']) && $_GET['id'] == $GLOBALS['PHPH_TABLE_ID']) {
-      $sortitem = array_slice($sortitem, $_GET['f'], $this->getMaxEntries());
-    }
-
-    $this->setCurEntries(0);
-
-    // create a HTML object to insert the arrays into and initialize it
-    $html = new PHPhilerHTML($this);
-
-    // if directories are to be shown first
-    if ($this->getDirectoriesOnTop()) {
-
-      // run through the directories first (if any exist)
-      foreach($sortitem as $key => $elem) {
-        // stop if we've reached the max number of entries
-        if (($this->getMaxEntries() != 0) && ($this->getCurEntries() == $this->getMaxEntries())) break;
-        if (array_key_exists ($key, $this->dirs)
-            && $this->_include_sub_dirs) {
-          $html->addDirToHtml($key, $this->dirs[$key]);
-          $dir_exists = TRUE;
-          $this->setCurEntries($this->getCurEntries()+1);
+        if ($this->getIncludeSubDirectories()) {
+          $this->_total_entries += sizeof($this->dirs);
         }
-      }
-      // add a divider if there are still elements to show in the table
-      if ($this->_total_entries > $this->getCurEntries()
-          && $this->getCurEntries() != $this->getMaxEntries()
-          && $dir_exists) {
-        $html->addDividerToHtml(sizeof($this->getColumnHeaders()));
-      }
-      // then run through the files (if any exist)
-      foreach($sortitem as $key => $elem) {
-        // stop if we've reached the max number of entries
-        if (($this->getMaxEntries() != 0) && ($this->getCurEntries() == $this->getMaxEntries())) break;
-        if (array_key_exists ($key, $this->files)) {
-          $html->addFileToHtml($key, $this->files[$key]);
-          $this->setCurEntries($this->getCurEntries()+1);
+        if ($this->getIncludeFiles()) {
+          $this->_total_entries += sizeof($this->files);
         }
-      }
-    // else mingle directories and files
-    } else {
-      foreach($sortitem as $key => $elem) {
-        // stop if we've reached the max number of entries
-        if (($this->getMaxEntries() != 0) && ($this->getCurEntries() == $this->getMaxEntries())) break;
-        if (array_key_exists ($key, $this->dirs)) {
-          $html->addDirToHtml($key, $this->dirs[$key]);
+
+        // set the table ID for the current listings
+        if (isset($GLOBALS['PHPH_TABLE_ID'])) {
+            $GLOBALS['PHPH_TABLE_ID']++;
+        } else {
+            $GLOBALS['PHPH_TABLE_ID'] = 1;
         }
-        elseif (array_key_exists ($key, $this->files)) {
-          $html->addFileToHtml($key, $this->files[$key]);
+
+        // if we want it all shown, set maxEntries to 0
+        if (isset($_GET['m']) && $_GET['m'] == 't' && $_GET['id'] == $GLOBALS['PHPH_TABLE_ID']) {
+          $this->setMaxEntries(0);
         }
-      }
+        // otherwise, slice a bit off the array and show only that
+        elseif(isset($_GET['f']) && $_GET['id'] == $GLOBALS['PHPH_TABLE_ID']) {
+          $sortitem = array_slice($sortitem, $_GET['f'], $this->getMaxEntries());
+        }
+
+        $this->setCurEntries(0);
+
+        // create a HTML object to insert the arrays into and initialize it
+        $html = new PHPhilerHTML($this);
+
+        // if directories are to be shown first
+        if ($this->getDirectoriesOnTop()) {
+
+          // run through the directories first (if any exist)
+          foreach($sortitem as $key => $elem) {
+            // stop if we've reached the max number of entries
+            if (($this->getMaxEntries() != 0) && ($this->getCurEntries() == $this->getMaxEntries())) break;
+            if (array_key_exists ($key, $this->dirs)
+                && $this->_include_sub_dirs) {
+              $html->addDirToHtml($key, $this->dirs[$key]);
+              $dir_exists = TRUE;
+              $this->setCurEntries($this->getCurEntries()+1);
+            }
+          }
+          // add a divider if there are still elements to show in the table
+          if ($this->_total_entries > $this->getCurEntries()
+              && $this->getCurEntries() != $this->getMaxEntries()
+              && $dir_exists) {
+            $html->addDividerToHtml(sizeof($this->getColumnHeaders()));
+          }
+          // then run through the files (if any exist)
+          foreach($sortitem as $key => $elem) {
+            // stop if we've reached the max number of entries
+            if (($this->getMaxEntries() != 0) && ($this->getCurEntries() == $this->getMaxEntries())) break;
+            if (array_key_exists ($key, $this->files)) {
+              $html->addFileToHtml($key, $this->files[$key]);
+              $this->setCurEntries($this->getCurEntries()+1);
+            }
+          }
+        // else mingle directories and files
+        } else {
+          foreach($sortitem as $key => $elem) {
+            // stop if we've reached the max number of entries
+            if (($this->getMaxEntries() != 0) && ($this->getCurEntries() == $this->getMaxEntries())) break;
+            if (array_key_exists ($key, $this->dirs)) {
+              $html->addDirToHtml($key, $this->dirs[$key]);
+            }
+            elseif (array_key_exists ($key, $this->files)) {
+              $html->addFileToHtml($key, $this->files[$key]);
+            }
+          }
+        }
+
+        // end the execution time calculation and add it to the HTML object
+        $mtime = microtime();
+        $mtime = explode(' ',$mtime);
+        $mtime = $mtime[1] + $mtime[0];
+        $endtime = $mtime;
+        $totaltime = round($endtime - $this->starttime, 4);
+        $html->addExecTimeToHtml($totaltime);
+
+        // finally, print the HTML output to the document
+        echo $html->getHtml();
+
+        // if debugging is enabled, open the debug window last
+        if ($this->_debug_mode === true) {
+            $this->Debugger->openDebugger($this->getPHPhilerURI());
+        }
     }
 
-    // end the execution time calculation and add it to the HTML object
-    $mtime = microtime();
-    $mtime = explode(' ',$mtime);
-    $mtime = $mtime[1] + $mtime[0];
-    $endtime = $mtime;
-    $totaltime = round($endtime - $this->starttime, 4);
-    $html->addExecTimeToHtml($totaltime);
-
-    // finally, print the HTML output to the document
-    echo $html->getHtml();
-
-    // if debugging is enabled, open the debug window last
-    if ($this->_debug_mode === true) {
-        $this->Debugger->openDebugger($this->getPHPhilerURI());
-    }
-  }
 
 
+    // Function to validate dirs and filenames for the current dir.
+    // It enters all info into the arrays.
+    function update($curdir, $depth) {
 
-  // Function to validate dirs and filenames for the current dir.
-  // It enters all info into the arrays.
-  function update($curdir, $depth) {
-
-    $this->cwd = $curdir;
-    // change to proper directory
-    chdir($this->cwd);
+        $this->cwd = $curdir;
+        // change to proper directory
+        chdir($this->cwd);
             $this->toDebugger(E_NOTICE, "Updating cwd to '" . $this->cwd . "' and chdir'ing",
                               __FUNCTION__, __LINE__, __FILE__);
 
-    //open the directory
-    $dir_handle = @opendir($this->cwd) or exit("<b style=\"color:red;\">ERROR:</b> update(): Unable to open directory '$this->cwd'<br>");
+        //open the directory
+        $dir_handle = @opendir($this->cwd) or exit("<b style=\"color:red;\">ERROR:</b> update(): Unable to open directory '$this->cwd'<br>");
 
-    // current working file
-    $file = NULL;
-    // open each file/dir in the directory and retrieve its info
-    while (($file = readdir($dir_handle)) !== false) {
-      if ($file != '.' && $file != '..' // don't check dir aliases
-         && !$this->isExcluded($file) ) // should it be excluded?
-      {
+        // current working file
+        $file = NULL;
+        // open each file/dir in the directory and retrieve its info
+        while (($file = readdir($dir_handle)) !== false) {
+            if ($file != '.' && $file != '..' // don't check dir aliases
+             && !$this->isExcluded($file) ) // should it be excluded?
+            {
 
-        // if it's a file
-        if (is_file($file)
-            && $this->_include_files // do we want to include files?
-            && $file !== $this->file_self // is it the script itself?
-            && $file !== $this->templatefilename ) // is it a template?
-        {
-          $suf = $this->getSuffix($file);
-          // check if we could get a suffix
-          if ($suf == FALSE) continue;
+                // if it's a file
+                if (is_file($file)
+                    && $this->_include_files // do we want to include files?
+                    && $file !== $this->file_self // is it the script itself?
+                    && $file !== $this->templatefilename ) // is it a template?
+                {
+                    $suf = $this->getSuffix($file);
+                    // check if we could get a suffix
+                    if ($suf == FALSE) continue;
 
-          // get the actions for the current suffix
-          $suf_actions = $this->getSuffixSettings($suf);
+                    // get the actions for the current suffix
+                    $suf_actions = $this->getSuffixSettings($suf);
 
-          // check if the suffix is valid
-          if ($suf_actions == FALSE) continue;
-          // then let's try to call each action in turn
-          foreach ($suf_actions as $key => $action) {
-            // if the function doesn't exist, try next action
-            if (!function_exists($action)) continue;
-            $fileinfo = call_user_func($action, $file);
-            // if file info was retrieved then
-            if ($fileinfo != FALSE) {
-              // don't check the rest of the suffixes
-              break;
-            } else {
-              // else go on to next action
-              continue;
-            }
-          }
-          // check for inconsistencies
-          if ($fileinfo == FALSE) {
-              exit ("<b style=\"color:red;\">ERROR</b>: file info retrieval (actions) failed for file '$file'!<br>");
-          // if there is no title, use the dirname itself
-          } elseif (!isset($fileinfo['title'])) {
-              $fileinfo['title'] = stripSuffix($file);
-          }
-          // enter the title for the file into the array
-          $this->files[$file] = $fileinfo['title'];
-          // get the description, if available
-          $this->filedescr[$file] = isset($fileinfo['description']) ? $fileinfo['description'] : $this->getNoDescriptionComment();
-          if (array_key_exists(PHPH_SIZE, $this->getColumnHeaders())) {
-            $this->filesizes[$file] = $this->readFileSize($file);
-          }
-          if (array_key_exists(PHPH_DATE, $this->getColumnHeaders())) {
-            $this->filedates[$file] = readFileDate($file);
-          }
-          $this->filepaths[$file] = $this->cwd . $file;
-          if ($fileinfo['uri'] == NULL) {
-            $fileinfo['uri'] = '/' . str_replace ($this->getDocRoot(), '', $this->filepaths[$file]);
-          }
-          $this->fileuris[$file] = $fileinfo['uri'];
+                    // check if the suffix is valid
+                    if ($suf_actions == FALSE) continue;
+                    // then let's try to call each action in turn
+                    foreach ($suf_actions as $key => $action) {
+                    // if the function doesn't exist, try next action
+                    if (!function_exists($action)) continue;
+                    $fileinfo = call_user_func($action, $file);
+                    // if file info was retrieved then
+                    if ($fileinfo != FALSE) {
+                        // don't check the rest of the suffixes
+                        break;
+                    } else {
+                        // else go on to next action
+                        continue;
+                    }
+                    }
+                    // check for inconsistencies
+                    if ($fileinfo == FALSE) {
+                        exit ("<b style=\"color:red;\">ERROR</b>: file info retrieval (actions) failed for file '$file'!<br>");
+                    // if there is no title, use the dirname itself
+                    } elseif (!isset($fileinfo['title'])) {
+                        $fileinfo['title'] = stripSuffix($file);
+                    }
+                    // enter the title for the file into the array
+                    $this->files[$file] = $fileinfo['title'];
+                    // get the description, if available
+                    $this->filedescr[$file] = isset($fileinfo['description']) ? $fileinfo['description'] : $this->getNoDescriptionComment();
+                    if (array_key_exists(PHPH_SIZE, $this->getColumnHeaders())) {
+                        $this->filesizes[$file] = $this->readFileSize($file);
+                    }
+                    if (array_key_exists(PHPH_DATE, $this->getColumnHeaders())) {
+                        $this->filedates[$file] = readFileDate($file);
+                    }
+                    $this->filepaths[$file] = $this->cwd . $file;
+                    if ($fileinfo['uri'] == NULL) {
+                        $fileinfo['uri'] = '/' . str_replace ($this->getDocRoot(), '', $this->filepaths[$file]);
+                    }
+                    $this->fileuris[$file] = $fileinfo['uri'];
 
-          // maybe create a template file (no need to do this for directories
-          if ($this->getAction($this->filepaths[$file], 1) == TRUE) {
-              $this->createTemplateFile();
-          }
-        }
-        // if it's a directory and we want to include them in the listings
-        elseif (is_dir($file)) {
-          // ref to file for readability
-          $dir =& $file;
-                $this->toDebugger(E_NOTICE, "Found dir '" . $dir . "'",
-                                  __FUNCTION__, __LINE__, __FILE__);
-
-          // only enter dirinfo if subdirectories are to be used
-          if ($this->getIncludeSubDirectories() === TRUE) {
+                    // maybe create a template file (no need to do this for directories
+                    if ($this->getAction($this->filepaths[$file], 1) == TRUE) {
+                        $this->createTemplateFile();
+                    }
+                }
+                // if it's a directory and we want to include them in the listings
+                elseif (is_dir($file)) {
+                        $this->toDebugger(E_NOTICE, "Found directory '" . $file . "'",
+                        __FUNCTION__, __LINE__, __FILE__);
+                    // ref to file for logical reasons
+                    $dir =& $file;
+                    // only enter dirinfo if directories are to be shown
+                    if ($this->getIncludeSubDirectories() === TRUE) {
                 $this->toDebugger(E_NOTICE, "Including subdirectories.",
                                   __FUNCTION__, __LINE__, __FILE__);
 
-            // get the actions for the current suffix
-            $suf_actions = $this->getSuffixSettings(PHPH_DIR);
+                        // get the actions for the current suffix
+                        $suf_actions = $this->getSuffixSettings(PHPH_DIR);
 
-            // check if the suffix is valid
-            if ($suf_actions == FALSE) continue;
-            // then let's try to call each action in turn
-            foreach ($suf_actions as $action) {
-              // if the function doesn't exist, try next action
-              if (!function_exists($action)) continue;
-              $fileinfo = call_user_func($action, $dir);
-              // if file info was retrieved then
-              if ($fileinfo != FALSE) {
-                // don't check the rest of the suffixes
-                break;
-              } else {
-                // else go on to next action
-                continue;
-              }
-            }
+                        // check if the suffix is valid
+                        if ($suf_actions == FALSE) continue;
+                        // then let's try to call each action in turn
+                        foreach ($suf_actions as $action) {
+                            // if the function doesn't exist, try next action
+                            if (!function_exists($action)) continue;
+                                $fileinfo = call_user_func($action, $dir);
+                                // if file info was retrieved then
+                            if ($fileinfo != FALSE) {
+                                // don't check the rest of the suffixes
+                                break;
+                            } else {
+                                // else go on to next action
+                                continue;
+                            }
+                        }
 
-            // check for inconsistencies
-            if ($fileinfo == FALSE) {
-                exit ("<b style=\"color:red;\">ERROR</b>: dir info retrieval ('$action') failed completely for dir '$dir'!<br>");
-            // if there is no title, use the dirname itself
-            } elseif (!isset($fileinfo['title'])) {
-                $fileinfo['title'] = $dir;
-            }
-            // enter the title for the file into the array
-            $this->dirs[$dir] = $fileinfo['title'];
-            // get the description, if available
-            $this->filedescr[$dir] = isset($fileinfo['description']) ? $fileinfo['description'] : $this->getNoDescriptionComment();
-            if (array_key_exists(PHPH_SIZE, $this->getColumnHeaders())) {
-              $this->filesizes[$dir] = $this->readDirSize($dir);
-            }
-            if (array_key_exists(PHPH_DATE, $this->getColumnHeaders())) {
-              $this->filedates[$dir] = readFileDate($dir);
-            }
-            $this->filepaths[$dir] = $this->cwd . $dir;
+                        // check for inconsistencies
+                        if ($fileinfo == FALSE) {
+                            exit ("<b style=\"color:red;\">ERROR</b>: dir info retrieval ('$action') failed completely for dir '$dir'!<br>");
+                        // if there is no title, use the dirname itself
+                        } elseif (!isset($fileinfo['title'])) {
+                            $fileinfo['title'] = $dir;
+                        }
+                        // enter the title for the file into the array
+                        $this->dirs[$dir] = $fileinfo['title'];
+                        // get the description, if available
+                        $this->filedescr[$dir] = isset($fileinfo['description']) ? $fileinfo['description'] : $this->getNoDescriptionComment();
+                        if (array_key_exists(PHPH_SIZE, $this->getColumnHeaders())) {
+                            $this->filesizes[$dir] = $this->readDirSize($dir);
+                        }
+                        if (array_key_exists(PHPH_DATE, $this->getColumnHeaders())) {
+                            $this->filedates[$dir] = readFileDate($dir);
+                        }
 
-            if (!isset($fileinfo['uri'])) {
-                $fileinfo['uri'] = str_replace ($this->getDocRoot(), '', $this->filepaths[$dir]);
-            }
-            $this->fileuris[$dir] = $fileinfo['uri'];
-          }
+                        $this->filepaths[$dir] = $this->cwd . $dir;
+                                $this->toDebugger(E_NOTICE, "Setting dir for '" . $dir . "' to " . $this->filepaths[$dir],
+                                                  __FUNCTION__, __LINE__, __FILE__);
+                        if (!isset($fileinfo['uri'])) {
+                            $fileinfo['uri'] = $this->getDocRootURI() . str_replace ($this->getDocRoot(), '', $this->filepaths[$dir]);
+                                $this->toDebugger(E_NOTICE, "URI not set for '" . $dir . "', setting it to " . $fileinfo['uri'],
+                                                  __FUNCTION__, __LINE__, __FILE__);
+                        }
+                        $this->fileuris[$dir] = $fileinfo['uri'];
+                    }
 
-          // dir path must always be entered
-          //$this->filepaths[$dir] = $this->cwd . $this->cwrd . $dir . '/';
+                    // dir path must always be entered
+                    // FIXME: WTF is this about?
+                    //$this->filepaths[$dir] = $this->cwd . $this->cwrd . $dir . '/';
                 $this->toDebugger(E_NOTICE, "Filepath for dir '" . $dir . "' is '" . $this->filepaths[$dir] . "'",
                                   __FUNCTION__, __LINE__, __FILE__);
 
-          // if we have the depth we wanted, or it's become negative
-          // (in which case we started with 0 depth = infinite)
-          if ($depth-1 > 0 || $depth-1 < 0) {
-            $this->cwrd = $this->cwrd . $dir . '/';
-            $this->cwrd = ($this->cwrd == '/' ? './' : $this->cwrd);
-              $depth--;
+          			// if we have the depth we wanted, or it's become negative
+                    // (in which case we started with 0 depth = infinite)
+                    if ($depth-1 > 0 || $depth-1 < 0) {
+                        $this->cwrd = $this->cwrd . $dir . '/';
+                        $this->cwrd = ($this->cwrd == '/' ? './' : $this->cwrd);
+                        $depth--;
                     $this->toDebugger(E_NOTICE, "Calling update() recursively with path '" . $this->cwd . $dir . '/' . "' and depth " . $depth,
                                       __FUNCTION__, __LINE__, __FILE__);
-              $this->update($this->cwd . $dir . '/', $depth);
-              $depth++;
-            $cwrd_ar = explode ('/', $this->cwrd);
-            array_pop($cwrd_ar);
-            array_pop($cwrd_ar);
-            $this->cwrd = implode('/', $cwrd_ar) . '/';
-            $this->cwrd = ($this->cwrd == '/' ? './' : $this->cwrd);
-          }
-          // when we return from the descent,
-          // we need to pop the directory off the end
-          chdir($curdir);
-        }
-      }
-    }
-    // closing dir apparently not possible.
-    //@closedir($dir_handle) or exit('ERROR: createFileList(): Unable to close directory '.$this->cwd);
+                        $this->update($this->cwd . $dir . '/', $depth);
+                        $depth++;
+                        $cwrd_ar = explode ('/', $this->cwrd);
+                        array_pop($cwrd_ar);
+                        array_pop($cwrd_ar);
+                        $this->cwrd = implode('/', $cwrd_ar) . '/';
+                        $this->cwrd = ($this->cwrd == '/' ? './' : $this->cwrd);
+                    }
+                    // when we return from the descent,
+                    // we need to pop the directory off the end
+                    chdir($curdir);
+                }
+            }
+            }
+        // closing dir apparently not possible.
+        //@closedir($dir_handle) or exit('ERROR: createFileList(): Unable to close directory '.$this->cwd);
 
-  }
+    }
 
 
   // Function that reads the size of a file or directory and formats the string
