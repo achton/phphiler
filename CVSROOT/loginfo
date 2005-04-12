@@ -29,3 +29,6 @@
 CVSROOT /cvsroot/sitedocs/CVSROOT/cvstools/syncmail %{sVv} geddeth@users.sourceforge.net
 # all other changes go to the list
 DEFAULT /cvsroot/sitedocs/CVSROOT/cvstools/syncmail %{sVv} phphiler-commits@lists.sourceforge.net
+
+# CIA bot for cia.navi.cx
+ALL /usr/bin/perl $CVSROOT/CVSROOT/ciabot_cvs.pl %{,,,s} $USER
