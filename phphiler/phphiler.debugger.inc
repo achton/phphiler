@@ -56,7 +56,7 @@ class PHPhiler_Debugger {
             font-family : verdana;
             font-size : 12px;
         }
-        body>div {
+        body div {
             border : 1px solid #aaa;
             margin : 4px;
             margin-bottom : 8px;
@@ -116,12 +116,17 @@ END;
                 $e_level .= '<div class="error">ERROR</div>';
                 break;
             default :
-
+            //
         }
+
+        $filename_html = (empty($filename) ? NULL : 'file <b><code>' . $filename .  '</code></b> | ');
+        $line_html = 'line <b><code>' . $line .  '</code></b> | ';
+        // check if magic constant __FUNCTION__ is supported (PHP >= 4.3.0)
+        $function_html = ($function == '__FUNCTION__' ? NULL : 'func <b><code>' . $function . '</code></b> | ');
 
         $stringout .= '<div>';
         $stringout .= $e_level;
-        $stringout .= '<b><code> ' . $filename . ' | func ' . $function . ' | line ' . $line . '</code></b><br>' . "\n";
+        $stringout .= $filename_html . $line_html . $function_html . '<br>' . "\n";
         $stringout .= $string . '<br>' . "\n";
         $stringout .= '</div>';
 

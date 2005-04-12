@@ -62,7 +62,7 @@ class PHPhiler {
 
   var $_total_entries       = NULL;     // number of files in this listing ($int)
 
-  var $_debug_mode          = true;     // debug mode on/off (bool)
+  var $_debug_mode          = false;     // debug mode on/off (bool)
   var $Debugger             = NULL;     // reference to the debugger instance
 
   var $files                = array();  // actual filenames and doctitles ('file' => 'title')
@@ -98,6 +98,16 @@ class PHPhiler {
     // set absolute PHPhiler path by using script path until last forward slash
     $this->setPHPhilerPath(substr(__FILE__, 0, strrpos(__FILE__, '/')+1));
 
+    // create a debugger instance (PHPhiler path must be set!)
+    if ($this->_debug_mode === true) {
+        $this->Debugger = new PHPhiler_Debugger($this->getPHPhilerPath());
+    }
+
+        $this->toDebugger(E_NOTICE, "<b>PHPHILER: </b> Constructor called.",
+                          __FUNCTION__, __LINE__, __FILE__);
+        $this->toDebugger(E_NOTICE, "PHPhiler path is '" . $this->getPHPhilerPath() . "'",
+                          __FUNCTION__, __LINE__, __FILE__);
+
     // constants
     if (!defined('PHPH_TITLE')) define ('PHPH_TITLE', 'title');
     if (!defined('PHPH_SIZE')) define ('PHPH_SIZE', 'size');
@@ -111,13 +121,11 @@ class PHPhiler {
 
     unset($GLOBALS['PHPH_CSS_SUFFIX']);
 
-    // create a debugger instance (PHPhiler path must be set!)
-    if ($this->_debug_mode === true) {
-        $this->Debugger = new PHPhiler_Debugger($this->getPHPhilerPath());
-    }
     // include the configuration file
     if (isset($GLOBALS['PHPH_CONFIG_FILE'])) {
         $this->configfilename = $GLOBALS['PHPH_CONFIG_FILE'];
+            $this->toDebugger(E_NOTICE, "Reading config file at '" . $this->configfilename . "'",
+                              __FUNCTION__, __LINE__, __FILE__);
         // NB: need to require (not require_once) config *every* time in order to get class
         // variables configured. This *should* change once all config options are moved to $GLOBAL
         require($this->configfilename);
@@ -131,6 +139,8 @@ class PHPhiler {
         $phph_rel = substr($this->getPHPhilerPath(), strlen($this->getDocRoot()));
         $phph_uri = $this->getDocRootURI() . $phph_rel;
         $this->setPHPhilerURI($phph_uri);
+            $this->toDebugger(E_NOTICE, "PHPhiler URI is '" . $this->getPHPhilerURI() . "'",
+                              __FUNCTION__, __LINE__, __FILE__);
     } else {
         exit("<b style=\"color:red;\">ERROR:</b>Unable to determine URI to PHPhiler directory.<br>");
     }
@@ -144,6 +154,8 @@ class PHPhiler {
         // document root was not set, use webserver's instead
         $this->setDocRoot($_SERVER['DOCUMENT_ROOT'] . '/');
     }
+        $this->toDebugger(E_NOTICE, "DOCROOT: " . $this->getDocRoot(),
+                          __FUNCTION__, __LINE__, __FILE__);
 
     // check if we can find PHPhiler source files
     if (!file_exists($this->getPHPhilerPath() . 'phphiler.inc')) {
@@ -158,20 +170,19 @@ class PHPhiler {
         require_once($this->getPHPhilerPath() . 'phphiler.custom.actions.inc');
     }
 
-    // pop the trailing slash off the end
-    //$doc_root_notrail = substr($doc_root, 0, strlen($doc_root)-1);
-    $doc_root_notrail = getcwd();
-        $this->toDebugger(E_NOTICE, "DOCROOT: " . $this->getDocRoot(), __FUNCTION__, __LINE__);
-        $this->toDebugger(E_NOTICE, "DOCROOT NT: " . $doc_root_notrail, __FUNCTION__, __LINE__);
-        $this->toDebugger(E_NOTICE, "SCRIPTNAME: " . $_SERVER['SCRIPT_NAME'], __FUNCTION__, __LINE__);
-        $this->toDebugger(E_NOTICE, "GETCWD()  : " . getcwd(), __FUNCTION__, __LINE__);
+        $this->toDebugger(E_NOTICE, "SCRIPTNAME: " . $_SERVER['SCRIPT_NAME'],
+                          __FUNCTION__, __LINE__, __FILE__);
+        $this->toDebugger(E_NOTICE, "GETCWD(): " . getcwd(),
+                          __FUNCTION__, __LINE__, __FILE__);
 
     // Set the current directory and absolute working directory
     //if (strncasecmp(getcwd(), $doc_root_notrail, strlen(getcwd()))
     $script_name_ar = explode('/',  $_SERVER['SCRIPT_NAME']);
     $this->file_self = array_pop($script_name_ar);
-        $this->toDebugger(E_NOTICE, "FILE_SELF: " . $this->file_self, __FUNCTION__, __LINE__);
-        $this->toDebugger(E_NOTICE, "SCRIPTNAME: " . var_export($script_name_ar, true), __FUNCTION__, __LINE__);
+        $this->toDebugger(E_NOTICE, "FILE_SELF: " . $this->file_self,
+                          __FUNCTION__, __LINE__, __FILE__);
+        $this->toDebugger(E_NOTICE, "SCRIPTNAME: " . var_export($script_name_ar, true),
+                          __FUNCTION__, __LINE__, __FILE__);
 
     // if startdir was given
     if (isset($startdir)) {
@@ -188,16 +199,14 @@ class PHPhiler {
                 && strncasecmp($startdir, 'sys:', 4) !== 0
                 && strncasecmp($startdir, 'vol1:', 5) !== 0 )
         {
-                $this->toDebugger(E_NOTICE, "STARTDIR_REL:" . $startdir,
+                $this->toDebugger(E_NOTICE, "STARTDIR_REL: " . $startdir,
                                   __FUNCTION__, __LINE__, __FILE__);
 
             // so let's convert relative to absolute path
             $startdir = getcwd() . '/' . $startdir;
-
-                $this->toDebugger(E_NOTICE, "STARTDIR:" . $startdir,
-                                  __FUNCTION__, __LINE__, __FILE__);
-
         }
+            $this->toDebugger(E_NOTICE, "STARTDIR: " . $startdir,
+                              __FUNCTION__, __LINE__, __FILE__);
 
         // set the supplied directory to current working dir and
         // resolve any symbolic links
@@ -205,19 +214,18 @@ class PHPhiler {
         // set the relative dir to the startdir - to begin with it's the top directory
         $this->cwrd = ''; // current working relative dir
 
-            $this->toDebugger(E_NOTICE, "CWD:" . $this->cwd,
+            $this->toDebugger(E_NOTICE, "CWD: " . $this->cwd,
                               __FUNCTION__, __LINE__, __FILE__);
-            $this->toDebugger(E_NOTICE, "CWRD:" . $this->cwrd,
+            $this->toDebugger(E_NOTICE, "CWRD: " . $this->cwrd,
                               __FUNCTION__, __LINE__, __FILE__);
 
     // if startdir was NOT given
     } else {
 
-        //$this->cwd = implode('/', $self_path_ar);
         $this->cwd = getcwd() . '/';
         // resolve any symbolic links
         $this->cwd = realpath($this->cwd) . '/';
-            $this->toDebugger(E_NOTICE, "CWD: " . $this->cwd,
+            $this->toDebugger(E_NOTICE, "CWD (no startdir): " . $this->cwd,
                               __FUNCTION__, __LINE__, __FILE__);
 
         // do some basic error checking
@@ -248,8 +256,12 @@ class PHPhiler {
     // get the current working dir
     $org_cwd = $this->cwd;
 
+        $this->toDebugger(E_NOTICE, "Updating arrays.",
+                          __FUNCTION__, __LINE__, __FILE__);
     // update the arrays
     $this->update($this->cwd, $this->getSubDirDescendLevels());
+        $this->toDebugger(E_NOTICE, "Finished updating arrays. Continuing index().",
+                          __FUNCTION__, __LINE__, __FILE__);
 
     // let's be good (ole') boys and change back to the dir we came from
     chdir($org_cwd);
@@ -411,6 +423,8 @@ class PHPhiler {
     $this->cwd = $curdir;
     // change to proper directory
     chdir($this->cwd);
+            $this->toDebugger(E_NOTICE, "Updating cwd to '" . $this->cwd . "' and chdir'ing",
+                              __FUNCTION__, __LINE__, __FILE__);
 
     //open the directory
     $dir_handle = @opendir($this->cwd) or exit("<b style=\"color:red;\">ERROR:</b> update(): Unable to open directory '$this->cwd'<br>");
@@ -482,10 +496,16 @@ class PHPhiler {
         }
         // if it's a directory and we want to include them in the listings
         elseif (is_dir($file)) {
-          // ref to file for logical reasons
+          // ref to file for readability
           $dir =& $file;
-          // only enter dirinfo if directories are to be shown
+                $this->toDebugger(E_NOTICE, "Found dir '" . $dir . "'",
+                                  __FUNCTION__, __LINE__, __FILE__);
+
+          // only enter dirinfo if subdirectories are to be used
           if ($this->getIncludeSubDirectories() === TRUE) {
+                $this->toDebugger(E_NOTICE, "Including subdirectories.",
+                                  __FUNCTION__, __LINE__, __FILE__);
+
             // get the actions for the current suffix
             $suf_actions = $this->getSuffixSettings(PHPH_DIR);
 
@@ -523,21 +543,27 @@ class PHPhiler {
             if (array_key_exists(PHPH_DATE, $this->getColumnHeaders())) {
               $this->filedates[$dir] = readFileDate($dir);
             }
-          $this->filepaths[$dir] = $this->cwd . $dir;
-          if (!isset($fileinfo['uri'])) {
-            $fileinfo['uri'] = str_replace ($this->getDocRoot(), '', $this->filepaths[$dir]);
-          }
+            $this->filepaths[$dir] = $this->cwd . $dir;
+
+            if (!isset($fileinfo['uri'])) {
+                $fileinfo['uri'] = str_replace ($this->getDocRoot(), '', $this->filepaths[$dir]);
+            }
             $this->fileuris[$dir] = $fileinfo['uri'];
           }
 
           // dir path must always be entered
-          $this->filepaths[$dir] = $this->cwd . $this->cwrd . $dir . '/';
-          // if we've the depth we wanted, or it's become negative
+          //$this->filepaths[$dir] = $this->cwd . $this->cwrd . $dir . '/';
+                $this->toDebugger(E_NOTICE, "Filepath for dir '" . $dir . "' is '" . $this->filepaths[$dir] . "'",
+                                  __FUNCTION__, __LINE__, __FILE__);
+
+          // if we have the depth we wanted, or it's become negative
           // (in which case we started with 0 depth = infinite)
           if ($depth-1 > 0 || $depth-1 < 0) {
             $this->cwrd = $this->cwrd . $dir . '/';
             $this->cwrd = ($this->cwrd == '/' ? './' : $this->cwrd);
               $depth--;
+                    $this->toDebugger(E_NOTICE, "Calling update() recursively with path '" . $this->cwd . $dir . '/' . "' and depth " . $depth,
+                                      __FUNCTION__, __LINE__, __FILE__);
               $this->update($this->cwd . $dir . '/', $depth);
               $depth++;
             $cwrd_ar = explode ('/', $this->cwrd);
