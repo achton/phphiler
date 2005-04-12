@@ -54,13 +54,13 @@ class PHPhiler_Debugger {
         body {
             background-color : #eee;
             font-family : verdana;
-            font-size : 12px;
+            font-size : 11px;
         }
         body div {
             border : 1px solid #aaa;
-            margin : 4px;
-            margin-bottom : 8px;
-            padding : 4px;
+            margin : 2px;
+            margin-bottom : 3px;
+            padding : 2px;
         }
         .notice, .warning, .error {
             font-weight : bold;
@@ -100,20 +100,21 @@ END;
         $filename = substr($file, strrpos($file, '/')+1);
 
         $stringout = NULL;
+        $e_level = NULL;
 
         // check the error_reporting level and set some HTML accordingly
         switch($int) {
             // just a notice, nothing important
             case E_NOTICE :
-                $e_level .= '<div class="notice">NOTICE</div>';
+                $e_level = '<div class="notice">NOTICE</div>';
                 break;
             // a warning, this is serious
             case E_WARNING :
-                $e_level .= '<div class="warning">WARNING</div>';
+                $e_level = '<div class="warning">WARNING</div>';
                 break;
             // an error, fix it now!
             case E_ERROR :
-                $e_level .= '<div class="error">ERROR</div>';
+                $e_level = '<div class="error">ERROR</div>';
                 break;
             default :
             //
