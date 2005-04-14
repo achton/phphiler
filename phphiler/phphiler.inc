@@ -62,8 +62,8 @@ class PHPhiler {
 
     var $_total_entries       = NULL;     // number of files in this listing ($int)
 
-  var $_debug_mode          = false;     // debug mode on/off (bool)
-  var $Debugger             = NULL;     // reference to the debugger instance
+    var $_debug_mode          = true;     // debug mode on/off (bool)
+    var $Debugger             = NULL;     // reference to the debugger instance
 
     var $files                = array();  // actual filenames and doctitles ('file' => 'title')
     var $dirs                 = array();  // dirs and corresponding titles ('dir' => 'title')
@@ -427,11 +427,15 @@ class PHPhiler {
     // It enters all info into the arrays.
     function update($curdir, $depth) {
 
+        // DEBUG
+        $this->toDebugger(E_NOTICE, "<b>UPDATE BEGIN</b>",
+                          __FUNCTION__, __LINE__, __FILE__);
+        $this->toDebugger(E_NOTICE, "Updating cwd to '" . $curdir . "' and chdir'ing",
+                          __FUNCTION__, __LINE__, __FILE__);
+
         $this->cwd = $curdir;
         // change to proper directory
         chdir($this->cwd);
-            $this->toDebugger(E_NOTICE, "Updating cwd to '" . $this->cwd . "' and chdir'ing",
-                              __FUNCTION__, __LINE__, __FILE__);
 
         //open the directory
         $dir_handle = @opendir($this->cwd) or exit("<b style=\"color:red;\">ERROR:</b> update(): Unable to open directory '$this->cwd'<br>");
@@ -443,6 +447,10 @@ class PHPhiler {
             if ($file != '.' && $file != '..' // don't check dir aliases
              && !$this->isExcluded($file) ) // should it be excluded?
             {
+            // DEBUG
+            $this->toDebugger(E_NOTICE, "Found file/dir '" . $file . "'",
+                              __FUNCTION__, __LINE__, __FILE__);
+
 
                 // if it's a file
                 if (is_file($file)
@@ -503,14 +511,19 @@ class PHPhiler {
                 }
                 // if it's a directory and we want to include them in the listings
                 elseif (is_dir($file)) {
-                        $this->toDebugger(E_NOTICE, "Found directory '" . $file . "'",
-                        __FUNCTION__, __LINE__, __FILE__);
+
+                    // DEBUG
+                    $this->toDebugger(E_NOTICE, "Found directory '" . $file . "'",
+                                      __FUNCTION__, __LINE__, __FILE__);
+
                     // ref to file for logical reasons
                     $dir =& $file;
                     // only enter dirinfo if directories are to be shown
                     if ($this->getIncludeSubDirectories() === TRUE) {
-                $this->toDebugger(E_NOTICE, "Including subdirectories.",
-                                  __FUNCTION__, __LINE__, __FILE__);
+
+                        // DEBUG
+                        $this->toDebugger(E_NOTICE, "Including subdirectories.",
+                                      __FUNCTION__, __LINE__, __FILE__);
 
                         // get the actions for the current suffix
                         $suf_actions = $this->getSuffixSettings(PHPH_DIR);
@@ -559,13 +572,20 @@ class PHPhiler {
                                                   __FUNCTION__, __LINE__, __FILE__);
                         }
                         $this->fileuris[$dir] = $fileinfo['uri'];
+                    } else {
+                        // dir path must always be entered
+                        // FIXME: WTF is this about?
+                        $this->filepaths[$dir] = $this->cwd . $this->cwrd . $dir . '/';
                     }
+                    $this->toDebugger(E_NOTICE, "GETCWD(): " . getcwd(),
+                                      __FUNCTION__, __LINE__, __FILE__);
+                    $this->toDebugger(E_NOTICE, "CWD: " . $this->cwd,
+                                      __FUNCTION__, __LINE__, __FILE__);
+                    $this->toDebugger(E_NOTICE, "CWRD: " . $this->cwrd,
+                                      __FUNCTION__, __LINE__, __FILE__);
 
-                    // dir path must always be entered
-                    // FIXME: WTF is this about?
-                    //$this->filepaths[$dir] = $this->cwd . $this->cwrd . $dir . '/';
-                $this->toDebugger(E_NOTICE, "Filepath for dir '" . $dir . "' is '" . $this->filepaths[$dir] . "'",
-                                  __FUNCTION__, __LINE__, __FILE__);
+                    $this->toDebugger(E_NOTICE, "Filepath for dir '" . $dir . "' is now '" . $this->filepaths[$dir] . "'",
+                                      __FUNCTION__, __LINE__, __FILE__);
 
           			// if we have the depth we wanted, or it's become negative
                     // (in which case we started with 0 depth = infinite)
@@ -573,8 +593,8 @@ class PHPhiler {
                         $this->cwrd = $this->cwrd . $dir . '/';
                         $this->cwrd = ($this->cwrd == '/' ? './' : $this->cwrd);
                         $depth--;
-                    $this->toDebugger(E_NOTICE, "Calling update() recursively with path '" . $this->cwd . $dir . '/' . "' and depth " . $depth,
-                                      __FUNCTION__, __LINE__, __FILE__);
+                            $this->toDebugger(E_NOTICE, "Calling update() recursively with path '" . $this->cwd . $dir . '/' . "' and depth " . $depth,
+                                              __FUNCTION__, __LINE__, __FILE__);
                         $this->update($this->cwd . $dir . '/', $depth);
                         $depth++;
                         $cwrd_ar = explode ('/', $this->cwrd);
@@ -583,13 +603,19 @@ class PHPhiler {
                         $this->cwrd = implode('/', $cwrd_ar) . '/';
                         $this->cwrd = ($this->cwrd == '/' ? './' : $this->cwrd);
                     }
+                    $this->toDebugger(E_NOTICE, "About to chdir. GETCWD(): " . getcwd(),
+                                      __FUNCTION__, __LINE__, __FILE__);
                     // when we return from the descent,
                     // we need to pop the directory off the end
-                    chdir($curdir);
+                    chdir('..');
+                    $this->toDebugger(E_NOTICE, "End of directory processing for '" . $dir . "'",
+                                      __FUNCTION__, __LINE__, __FILE__);
+                    $this->toDebugger(E_NOTICE, "Chdir'ing to '..' - GETCWD(): " . getcwd(),
+                                      __FUNCTION__, __LINE__, __FILE__);
                 }
             }
-            }
-        // closing dir apparently not possible.
+        }
+        // FIXME: closing dir apparently not possible. why?
         //@closedir($dir_handle) or exit('ERROR: createFileList(): Unable to close directory '.$this->cwd);
 
     }
@@ -718,10 +744,14 @@ class PHPhiler {
         }
     }
 
+    /**
+     * Wrapper function for error reporting to the user (not debugging). Displays an error message
+     * and halts the script.
+     *
+     */
+    function error2($string, $function=NULL, $line=NULL, $file=NULL) {
 
-  function error2($string, $function=NULL, $line=NULL, $file=NULL) {
-
-      exit;
+        exit;
   }
 
   // _______________________________________________________________________ //
