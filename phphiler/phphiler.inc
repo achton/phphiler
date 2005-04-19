@@ -2,7 +2,7 @@
 /*
 PHPhiler - a dynamic engine for file and directory indexing with PHP
 
-Copyright (c) 2003-2004 Achton N. Netherclift
+Copyright (c) 2003-2005 Achton N. Netherclift
 
 PHPhiler is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -225,9 +225,9 @@ class PHPhiler {
     // if startdir was NOT given
     } else {
 
-        $this->cwd = getcwd() . '/';
+        $this->cwd = realpath(getcwd()) . '/';
         // resolve any symbolic links
-        $this->cwd = realpath($this->cwd) . '/';
+        //$this->cwd = ($this->cwd) . '/';
             $this->toDebugger(E_NOTICE, "CWD (no startdir): " . $this->cwd,
                               __FUNCTION__, __LINE__, __FILE__);
 
@@ -253,27 +253,29 @@ class PHPhiler {
     }
 
 
-  // Main function that prints the entire HTML output. It is to be called from
-  // any document that wants the table index printed.
-  function index() {
-    // get the current working dir
-    $org_cwd = $this->cwd;
+    // Main function that prints the entire HTML output. It is to be called from
+    // any document that wants the table index printed.
+    function index() {
+        // get the current working dir
+        $org_cwd = $this->cwd;
 
         $this->toDebugger(E_NOTICE, "Updating arrays.",
                           __FUNCTION__, __LINE__, __FILE__);
-    // update the arrays
-    $this->update($this->cwd, $this->getSubDirDescendLevels());
+
+        // update the arrays
+        $this->update($this->cwd, $this->getSubDirDescendLevels());
+
         $this->toDebugger(E_NOTICE, "Finished updating arrays. Continuing index().",
                           __FUNCTION__, __LINE__, __FILE__);
 
-    // let's be good (ole') boys and change back to the dir we came from
-    chdir($org_cwd);
+        // let's be good (ole') boys and change back to the dir we came from
+        chdir($org_cwd);
 
-    // check if the column we sort by is also shown or display an error
-    if (array_key_exists($this->_sortcolumn, $this->getColumnHeaders()) === false) {
-        exit ("<b>CONFIG ERROR:</b> The column to sort by (setSortOrder) is not included in the
-              column headers (setColumnHeaders).<br>");
-    }
+        // check if the column we sort by is also shown or display an error
+        if (array_key_exists($this->_sortcolumn, $this->getColumnHeaders()) === false) {
+            exit ("<b>CONFIG ERROR:</b> The column to sort by (setSortOrder) is not included in the
+                  column headers (setColumnHeaders).<br>");
+        }
 
 
         $sortitem = NULL;
@@ -330,6 +332,8 @@ class PHPhiler {
             }
             break;
         }
+        $this->toDebugger(E_NOTICE, "Finished sorting arrays",
+                          __FUNCTION__, __LINE__, __FILE__);
 
         $this->_total_entries = 0;
 
@@ -364,44 +368,64 @@ class PHPhiler {
         // if directories are to be shown first
         if ($this->getDirectoriesOnTop()) {
 
-          // run through the directories first (if any exist)
-          foreach($sortitem as $key => $elem) {
-            // stop if we've reached the max number of entries
-            if (($this->getMaxEntries() != 0) && ($this->getCurEntries() == $this->getMaxEntries())) break;
-            if (array_key_exists ($key, $this->dirs)
-                && $this->_include_sub_dirs) {
-              $html->addDirToHtml($key, $this->dirs[$key]);
-              $dir_exists = TRUE;
-              $this->setCurEntries($this->getCurEntries()+1);
+            $this->toDebugger(E_NOTICE, "Directories are shown on top.",
+                              __FUNCTION__, __LINE__, __FILE__);
+
+            // run through the directories first (if any exist)
+            foreach($sortitem as $key => $elem) {
+                $this->toDebugger(E_NOTICE, "Checking directory '" . $key . "' for adding to HTML.",
+                                  __FUNCTION__, __LINE__, __FILE__);
+
+                // stop if we've reached the max number of entries
+                if (($this->getMaxEntries() != 0) && ($this->getCurEntries() == $this->getMaxEntries())) break;
+
+                if (array_key_exists ($key, $this->dirs)
+                    && $this->_include_sub_dirs)
+                {
+                    $html->addDirToHtml($key, $this->dirs[$key]);
+                    $dir_exists = TRUE;
+                    $this->setCurEntries($this->getCurEntries()+1);
+                }
             }
-          }
-          // add a divider if there are still elements to show in the table
-          if ($this->_total_entries > $this->getCurEntries()
-              && $this->getCurEntries() != $this->getMaxEntries()
-              && $dir_exists) {
-            $html->addDividerToHtml(sizeof($this->getColumnHeaders()));
-          }
-          // then run through the files (if any exist)
-          foreach($sortitem as $key => $elem) {
-            // stop if we've reached the max number of entries
-            if (($this->getMaxEntries() != 0) && ($this->getCurEntries() == $this->getMaxEntries())) break;
-            if (array_key_exists ($key, $this->files)) {
-              $html->addFileToHtml($key, $this->files[$key]);
-              $this->setCurEntries($this->getCurEntries()+1);
+
+            // add a divider if there are still elements to show in the table
+            if ($this->_total_entries > $this->getCurEntries()
+                && $this->getCurEntries() != $this->getMaxEntries()
+                && $dir_exists)
+            {
+                $html->addDividerToHtml(sizeof($this->getColumnHeaders()));
             }
-          }
-        // else mingle directories and files
-        } else {
-          foreach($sortitem as $key => $elem) {
-            // stop if we've reached the max number of entries
-            if (($this->getMaxEntries() != 0) && ($this->getCurEntries() == $this->getMaxEntries())) break;
-            if (array_key_exists ($key, $this->dirs)) {
-              $html->addDirToHtml($key, $this->dirs[$key]);
+
+            // then run through the files (if any exist)
+            foreach($sortitem as $key => $elem)
+            {
+                // stop if we've reached the max number of entries
+                if (($this->getMaxEntries() != 0) && ($this->getCurEntries() == $this->getMaxEntries())) break;
+
+                if (array_key_exists ($key, $this->files))
+                {
+                    $html->addFileToHtml($key, $this->files[$key]);
+                    $this->setCurEntries($this->getCurEntries()+1);
+                }
             }
-            elseif (array_key_exists ($key, $this->files)) {
-              $html->addFileToHtml($key, $this->files[$key]);
+
+            // else mingle directories and files
+        } else
+        {
+
+            $this->toDebugger(E_NOTICE, "Directories not shown on top.",
+                              __FUNCTION__, __LINE__, __FILE__);
+
+            foreach($sortitem as $key => $elem) {
+                // stop if we've reached the max number of entries
+                if (($this->getMaxEntries() != 0) && ($this->getCurEntries() == $this->getMaxEntries())) break;
+                if (array_key_exists ($key, $this->dirs)) {
+                    $html->addDirToHtml($key, $this->dirs[$key]);
+                }
+                elseif (array_key_exists ($key, $this->files)) {
+                    $html->addFileToHtml($key, $this->files[$key]);
+                }
             }
-          }
         }
 
         // end the execution time calculation and add it to the HTML object
@@ -458,6 +482,9 @@ class PHPhiler {
                     && $file !== $this->file_self // is it the script itself?
                     && $file !== $this->templatefilename ) // is it a template?
                 {
+                    // DEBUG
+                    $this->toDebugger(E_NOTICE, "Calling getSuffix with '" . $file . "'",
+                                      __FUNCTION__, __LINE__, __FILE__);
                     $suf = $this->getSuffix($file);
                     // check if we could get a suffix
                     if ($suf == FALSE) continue;
@@ -469,18 +496,22 @@ class PHPhiler {
                     if ($suf_actions == FALSE) continue;
                     // then let's try to call each action in turn
                     foreach ($suf_actions as $key => $action) {
-                    // if the function doesn't exist, try next action
-                    if (!function_exists($action)) continue;
-                    $fileinfo = call_user_func($action, $file);
-                    // if file info was retrieved then
-                    if ($fileinfo != FALSE) {
-                        // don't check the rest of the suffixes
-                        break;
-                    } else {
-                        // else go on to next action
-                        continue;
+                        // if the function doesn't exist, try next action
+                        if (!function_exists($action)) continue;
+                        $fileinfo = call_user_func($action, $file);
+                        // if file info was retrieved then
+                        if ($fileinfo != FALSE) {
+                            // don't check the rest of the suffixes
+                            break;
+                        } else {
+                            // else go on to next action
+                            continue;
+                        }
                     }
-                    }
+                    // DEBUG
+                    $this->toDebugger(E_NOTICE, "Actions finished for file '" . $file . "'",
+                                      __FUNCTION__, __LINE__, __FILE__);
+
                     // check for inconsistencies
                     if ($fileinfo == FALSE) {
                         exit ("<b style=\"color:red;\">ERROR</b>: file info retrieval (actions) failed for file '$file'!<br>");
@@ -490,6 +521,9 @@ class PHPhiler {
                     }
                     // enter the title for the file into the array
                     $this->files[$file] = $fileinfo['title'];
+                    // DEBUG
+                    $this->toDebugger(E_NOTICE, "Setting file description for file '" . $file . "'",
+                                      __FUNCTION__, __LINE__, __FILE__);
                     // get the description, if available
                     $this->filedescr[$file] = isset($fileinfo['description']) ? $fileinfo['description'] : $this->getNoDescriptionComment();
                     if (array_key_exists(PHPH_SIZE, $this->getColumnHeaders())) {
@@ -498,16 +532,23 @@ class PHPhiler {
                     if (array_key_exists(PHPH_DATE, $this->getColumnHeaders())) {
                         $this->filedates[$file] = readFileDate($file);
                     }
-                    $this->filepaths[$file] = $this->cwd . $file;
+                    $this->filepaths[$file] = getcwd() . '/' . $file;
                     if ($fileinfo['uri'] == NULL) {
                         $fileinfo['uri'] = '/' . str_replace ($this->getDocRoot(), '', $this->filepaths[$file]);
                     }
                     $this->fileuris[$file] = $fileinfo['uri'];
 
+                    // DEBUG
+                    $this->toDebugger(E_NOTICE, "File info for '" . $file . "' done",
+                                      __FUNCTION__, __LINE__, __FILE__);
+
                     // maybe create a template file (no need to do this for directories
                     if ($this->getAction($this->filepaths[$file], 1) == TRUE) {
                         $this->createTemplateFile();
                     }
+                    // DEBUG
+                    $this->toDebugger(E_NOTICE, "Template created for '" . $file . "'",
+                                      __FUNCTION__, __LINE__, __FILE__);
                 }
                 // if it's a directory and we want to include them in the listings
                 elseif (is_dir($file)) {
@@ -563,7 +604,7 @@ class PHPhiler {
                             $this->filedates[$dir] = readFileDate($dir);
                         }
 
-                        $this->filepaths[$dir] = $this->cwd . $dir;
+                        $this->filepaths[$dir] = realpath(getcwd() . '/' . $dir . '/');
                                 $this->toDebugger(E_NOTICE, "Setting dir for '" . $dir . "' to " . $this->filepaths[$dir],
                                                   __FUNCTION__, __LINE__, __FILE__);
                         if (!isset($fileinfo['uri'])) {
@@ -574,8 +615,7 @@ class PHPhiler {
                         $this->fileuris[$dir] = $fileinfo['uri'];
                     } else {
                         // dir path must always be entered
-                        // FIXME: WTF is this about?
-                        $this->filepaths[$dir] = $this->cwd . $this->cwrd . $dir . '/';
+                        $this->filepaths[$dir] = realpath(getcwd() . '/' . $dir . '/');
                     }
                     $this->toDebugger(E_NOTICE, "GETCWD(): " . getcwd(),
                                       __FUNCTION__, __LINE__, __FILE__);
@@ -595,7 +635,7 @@ class PHPhiler {
                         $depth--;
                             $this->toDebugger(E_NOTICE, "Calling update() recursively with path '" . $this->cwd . $dir . '/' . "' and depth " . $depth,
                                               __FUNCTION__, __LINE__, __FILE__);
-                        $this->update($this->cwd . $dir . '/', $depth);
+                        $this->update($this->filepaths[$dir] . '/', $depth);
                         $depth++;
                         $cwrd_ar = explode ('/', $this->cwrd);
                         array_pop($cwrd_ar);
@@ -698,8 +738,10 @@ class PHPhiler {
   }
 
 
-
   function getAction($file, $bitno) {
+            // DEBUG
+            $this->toDebugger(E_NOTICE, "getAction() called with '" . $file . "'",
+                              __FUNCTION__, __LINE__, __FILE__);
     $suf = $this->getSuffix($file);
     foreach ($this->getSuffixSettings() as $suf_act_ar) {
       if (strcasecmp($suf,$suf_act_ar[0]) == 0) {
@@ -710,8 +752,12 @@ class PHPhiler {
     exit ("<b style=\"color:red;\">ERROR:</b> suffix '$suf' for file '$file' not defined!<br>");
   }
 
+
     // Function to return the suffix only
     function getSuffix($file) {
+            // DEBUG
+            $this->toDebugger(E_NOTICE, "getSuffix() called with '" . $file . "'",
+                              __FUNCTION__, __LINE__, __FILE__);
         //$file = translate_string($file, $GLOBALS['PHPH_PATH_FUNC'], $GLOBALS['PHPH_PATH_ARGS']);
         if (is_file($file)) {
             $pathinfo = pathinfo($file);
@@ -721,7 +767,7 @@ class PHPhiler {
         } elseif (is_dir($file)) {
             return PHPH_DIR; // special case keyword
         }
-        exit ("<b style=\"color:red;\">ERROR:</b> Could not determine suffix for file '$file' in dir '".$this->cwd."'<br>");
+        exit ("<b style=\"color:red;\">ERROR:</b> Could not determine suffix for file '$file' in dir '".getcwd()."'<br>");
     }
 
     /**
@@ -773,6 +819,8 @@ class PHPhiler {
   }
 
   function getSuffixSettings($suf=NULL) {
+        $this->toDebugger(E_NOTICE, "getSuffixSettings called with suffix '" . $suf . "'",
+                          __FUNCTION__, __LINE__, __FILE__);
     if ($suf == NULL) {
       return $GLOBALS['PHPH_SUFFIX_SETTINGS'];
     } else {
