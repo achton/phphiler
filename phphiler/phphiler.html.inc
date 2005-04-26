@@ -186,7 +186,7 @@ class PHPhilerHTML {
 
     $statusbartext = $this->getStatusbar($dir, $title);
 
-    $link_string = '/' . translate_string($this->_phphiler->fileuris[$dir],
+    $link_string = translate_string($this->_phphiler->fileuris[$dir],
                                     $GLOBALS['PHPH_PATH_FUNC'],
                                     $GLOBALS['PHPH_PATH_ARGS']);
 
@@ -254,13 +254,11 @@ class PHPhilerHTML {
     // check if a uri for the file has been given
     } elseif (!empty($this->_phphiler->fileuris[$file])) {
       $link_string = $this->_phphiler->fileuris[$file];
-      //$link_string = '/' . $link_string;
     // else link directly to the file
     } else {
       $link_string = translate_string($this->_phphiler->filepaths[$file],
                                       $GLOBALS['PHPH_PATH_FUNC'],
                                       $GLOBALS['PHPH_PATH_ARGS']);
-      $link_string = '/' . $link_string;
     }
 
     // set the contents of the statusbar when the link is hovered
