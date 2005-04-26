@@ -436,11 +436,16 @@ class PHPhiler {
         $totaltime = round($endtime - $this->starttime, 4);
         $html->addExecTimeToHtml($totaltime);
 
+        $this->toDebugger(E_NOTICE, "All done processing, displaying HTML.",
+                          __FUNCTION__, __LINE__, __FILE__);
+
         // finally, print the HTML output to the document
         echo $html->getHtml();
 
         // if debugging is enabled, open the debug window last
         if ($this->_debug_mode === true) {
+            $this->toDebugger(E_NOTICE, "Debugging enabled, opening debug output.",
+                              __FUNCTION__, __LINE__, __FILE__);
             $this->Debugger->openDebugger($this->getPHPhilerURI());
         }
     }
@@ -532,23 +537,31 @@ class PHPhiler {
                     if (array_key_exists(PHPH_DATE, $this->getColumnHeaders())) {
                         $this->filedates[$file] = readFileDate($file);
                     }
+
+                    // set the absolute path for the file
                     $this->filepaths[$file] = getcwd() . '/' . $file;
+
+                    // if the URI for the file was not provided by some action
                     if ($fileinfo['uri'] == NULL) {
-                        $fileinfo['uri'] = '/' . str_replace ($this->getDocRoot(), '', $this->filepaths[$file]);
+                        // build the URI from the doc root and relative working dir
+                        $this->fileuris[$file] = $this->getDocRootURI() . str_replace (strtolower($this->getDocRoot()), '', strtolower($this->filepaths[$file]));
+                            $this->toDebugger(E_NOTICE, "URI not set for '" . $file . "', setting it to " . $this->fileuris[$file],
+                                              __FUNCTION__, __LINE__, __FILE__);
                     }
-                    $this->fileuris[$file] = $fileinfo['uri'];
 
                     // DEBUG
+                    $this->toDebugger(E_NOTICE, "URI for file '" . $file . "' is now '" . $this->fileuris[$file] . "'",
+                                      __FUNCTION__, __LINE__, __FILE__);
                     $this->toDebugger(E_NOTICE, "File info for '" . $file . "' done",
                                       __FUNCTION__, __LINE__, __FILE__);
 
                     // maybe create a template file (no need to do this for directories
                     if ($this->getAction($this->filepaths[$file], 1) == TRUE) {
                         $this->createTemplateFile();
+                        // DEBUG
+                        $this->toDebugger(E_NOTICE, "Template created for '" . $file . "'",
+                                          __FUNCTION__, __LINE__, __FILE__);
                     }
-                    // DEBUG
-                    $this->toDebugger(E_NOTICE, "Template created for '" . $file . "'",
-                                      __FUNCTION__, __LINE__, __FILE__);
                 }
                 // if it's a directory and we want to include them in the listings
                 elseif (is_dir($file)) {
@@ -605,17 +618,29 @@ class PHPhiler {
                         }
 
                         $this->filepaths[$dir] = realpath(getcwd() . '/' . $dir . '/');
-                                $this->toDebugger(E_NOTICE, "Setting dir for '" . $dir . "' to " . $this->filepaths[$dir],
-                                                  __FUNCTION__, __LINE__, __FILE__);
+                            $this->toDebugger(E_NOTICE, "Setting abs path for '" . $dir . "' to " . $this->filepaths[$dir],
+                                              __FUNCTION__, __LINE__, __FILE__);
+
+                        // if the URI for the dir was not provided by some action
                         if (!isset($fileinfo['uri'])) {
-                            $fileinfo['uri'] = $this->getDocRootURI() . str_replace ($this->getDocRoot(), '', $this->filepaths[$dir]);
-                                $this->toDebugger(E_NOTICE, "URI not set for '" . $dir . "', setting it to " . $fileinfo['uri'],
+                            // build the URI from the doc root and relative working dir
+                            $this->fileuris[$dir] = $this->getDocRootURI() . str_replace (strtolower($this->getDocRoot()), '', strtolower($this->filepaths[$dir]));
+                                $this->toDebugger(E_NOTICE, "URI not set for '" . $dir . "', setting it to " . $this->fileuris[$dir],
                                                   __FUNCTION__, __LINE__, __FILE__);
                         }
-                        $this->fileuris[$dir] = $fileinfo['uri'];
+
+                        // DEBUG
+                        $this->toDebugger(E_NOTICE, "URI for dir '" . $dir . "' is now '" . $this->fileuris[$dir] . "'",
+                                          __FUNCTION__, __LINE__, __FILE__);
+                        $this->toDebugger(E_NOTICE, "File info for '" . $dir . "' done",
+                                          __FUNCTION__, __LINE__, __FILE__);
+
                     } else {
                         // dir path must always be entered
-                        $this->filepaths[$dir] = realpath(getcwd() . '/' . $dir . '/');
+                        $this->filepaths[$dir] = realpath(getcwd() . '/' . $dir) . '/';
+                        // DEBUG
+                        $this->toDebugger(E_NOTICE, "Subdirectories NOT included.",
+                                      __FUNCTION__, __LINE__, __FILE__);
                     }
                     $this->toDebugger(E_NOTICE, "GETCWD(): " . getcwd(),
                                       __FUNCTION__, __LINE__, __FILE__);
@@ -624,7 +649,7 @@ class PHPhiler {
                     $this->toDebugger(E_NOTICE, "CWRD: " . $this->cwrd,
                                       __FUNCTION__, __LINE__, __FILE__);
 
-                    $this->toDebugger(E_NOTICE, "Filepath for dir '" . $dir . "' is now '" . $this->filepaths[$dir] . "'",
+                    $this->toDebugger(E_NOTICE, "Abs path for dir '" . $dir . "' is now '" . $this->filepaths[$dir] . "'",
                                       __FUNCTION__, __LINE__, __FILE__);
 
           			// if we have the depth we wanted, or it's become negative
