@@ -52,8 +52,8 @@ class PHPhiler {
     var $_sortcolumn          = NULL;     // the column to sort by (string/keyword)
     var $_sortorder           = NULL;     // the order to sort by (asc/desc) (string/keyword)
 
-    var $_include_sub_dirs    = NULL;     // whether to include directories (bool)
-    var $_include_files       = NULL;     // whether to include files (bool)
+    var $_show_sub_dirs    = NULL;     // whether to include directories (bool)
+    var $_show_files       = NULL;     // whether to include files (bool)
     var $_include_table_header = NULL;    // whether to include the table header columns (bool)
     var $_include_table_footer = NULL;    // whether to include the table footer (bool)
 
@@ -225,7 +225,7 @@ class PHPhiler {
     // if startdir was NOT given
     } else {
 
-        $this->cwd = realpath(getcwd()) . '/';
+        $this->cwd = getcwd() . '/';
         // resolve any symbolic links
         //$this->cwd = ($this->cwd) . '/';
             $this->toDebugger(E_NOTICE, "CWD (no startdir): " . $this->cwd,
@@ -337,10 +337,11 @@ class PHPhiler {
 
         $this->_total_entries = 0;
 
-        if ($this->getIncludeSubDirectories()) {
+        // if we want to show subdirs
+        if ($this->getSubDirDescendLevels() != 1) {
           $this->_total_entries += sizeof($this->dirs);
         }
-        if ($this->getIncludeFiles()) {
+        if ($this->getShowFiles()) {
           $this->_total_entries += sizeof($this->files);
         }
 
@@ -380,7 +381,7 @@ class PHPhiler {
                 if (($this->getMaxEntries() != 0) && ($this->getCurEntries() == $this->getMaxEntries())) break;
 
                 if (array_key_exists ($key, $this->dirs)
-                    && $this->_include_sub_dirs)
+                    && $this->getShowSubDirectories() === TRUE)
                 {
                     $html->addDirToHtml($key, $this->dirs[$key]);
                     $dir_exists = TRUE;
@@ -483,7 +484,7 @@ class PHPhiler {
 
                 // if it's a file
                 if (is_file($file)
-                    && $this->_include_files // do we want to include files?
+                    && $this->getShowFiles() // do we want to include files?
                     && $file !== $this->file_self // is it the script itself?
                     && $file !== $this->templatefilename ) // is it a template?
                 {
@@ -573,7 +574,7 @@ class PHPhiler {
                     // ref to file for logical reasons
                     $dir =& $file;
                     // only enter dirinfo if directories are to be shown
-                    if ($this->getIncludeSubDirectories() === TRUE) {
+                    if ($this->getShowSubDirectories() === TRUE) {
 
                         // DEBUG
                         $this->toDebugger(E_NOTICE, "Including subdirectories.",
@@ -668,16 +669,19 @@ class PHPhiler {
                         $this->cwrd = implode('/', $cwrd_ar) . '/';
                         $this->cwrd = ($this->cwrd == '/' ? './' : $this->cwrd);
                     }
-                    $this->toDebugger(E_NOTICE, "About to chdir. GETCWD(): " . getcwd(),
-                                      __FUNCTION__, __LINE__, __FILE__);
-                    // when we return from the descent,
-                    // we need to pop the directory off the end
-                    chdir('..');
                     $this->toDebugger(E_NOTICE, "End of directory processing for '" . $dir . "'",
                                       __FUNCTION__, __LINE__, __FILE__);
-                    $this->toDebugger(E_NOTICE, "Chdir'ing to '..' - GETCWD(): " . getcwd(),
+                } else {
+                    // DEBUG
+                    $this->toDebugger(E_NOTICE, "Found neither file nor directory: '" . $file . "'",
                                       __FUNCTION__, __LINE__, __FILE__);
                 }
+
+                $this->toDebugger(E_NOTICE, "About to chdir. GETCWD(): " . getcwd(),
+                                  __FUNCTION__, __LINE__, __FILE__);
+                // when we return from the descent,
+                // we need to pop the directory off the end
+                //chdir('..');
             }
         }
         // FIXME: closing dir apparently not possible. why?
@@ -943,18 +947,18 @@ class PHPhiler {
     $this->_desc_end_tag   = '</'.$string.'>';
   }
 
-  function setIncludeSubDirectories($bool) {
-    $this->_include_sub_dirs = $bool;
+  function setShowSubDirectories($bool) {
+    $this->_show_sub_dirs = $bool;
   }
-  function getIncludeSubDirectories() {
-    return $this->_include_sub_dirs;
+  function getShowSubDirectories() {
+    return $this->_show_sub_dirs;
   }
 
-  function setIncludeFiles($bool) {
-    $this->_include_files = $bool;
+  function setShowFiles($bool) {
+    $this->_show_files = $bool;
   }
-  function getIncludeFiles() {
-    return $this->_include_files;
+  function getShowFiles() {
+    return $this->_show_files;
   }
 
   function setSubDirDescendLevels($num) {

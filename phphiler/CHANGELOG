@@ -12,6 +12,8 @@ Feature:
   - Debugger added (for development purposes)
 
 Change:
+  - setIncludeSubDirectories function renamed to setShowSubDirectories
+  - setIncludeFiles function renamed to setShowFiles
   - setPHPhilerPath config option eliminated
   - setDocRootURI config option added, which sets the URI to the document root
 
